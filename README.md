@@ -1,6 +1,6 @@
 # Introduction
 
-finance chart for dz-web
+Awesome finance chart
 
 
 ## Install
@@ -15,7 +15,7 @@ npm install @dz-web/finance-chart
 import FinanceChart from '@dz-web/finance-chart';
 import '@dz-web/finance-chart/dist/finance-chart.css';
 
-// ...
+
 ```
 
 
@@ -24,14 +24,19 @@ import '@dz-web/finance-chart/dist/finance-chart.css';
 
 ### prerequisite
 
-Unit test dependen depend on [node-canvas](https://www.npmjs.com/package/canvas)
-In order to install it successfully,
-you can follow [node-canvas wiki](https://github.com/Automattic/node-canvas/wiki/_pages),
-but on osx system, only some simple step
+In order to install [node-canvas](https://www.npmjs.com/package/canvas) successfully.
+
+if you use osx system, just following command on below. Get more detail at [node-canvas wiki](https://github.com/Automattic/node-canvas/wiki/_pages)
 
 ```shell
 brew install pkg-config
 brew install pixman
 brew install cairo
+```
+
+### build
+
+```shell
+npm run dist
 ```
 
