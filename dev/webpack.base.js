@@ -7,7 +7,7 @@ module.exports = env => {
       'finance-chart': './index'
     },
     resolve: {
-      extensions: ['.js', '.jsx'],
+      extensions: ['.ts', '.tsx', '.js'],
     },
     output: {
       library: 'FinanceChart',
@@ -16,13 +16,12 @@ module.exports = env => {
     module: {
       rules: [
         {
-          test: /\.jsx?$/,
+          test: /\.tsx?$/,
           use: [
             {
-              loader: 'babel-loader',
+              loader: 'ts-loader',
             },
-          ],
-          exclude: /node_modules/,
+          ]
         },
       ]
     },

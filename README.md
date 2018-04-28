@@ -26,7 +26,7 @@ import '@dz-web/finance-chart/dist/finance-chart.css';
 
 In order to install [node-canvas](https://www.npmjs.com/package/canvas) successfully.
 
-if you use osx system, just following command on below. Get more detail at [node-canvas wiki](https://github.com/Automattic/node-canvas/wiki/_pages)
+If you use osx system, just following commands on below. Get more detail at [node-canvas wiki](https://github.com/Automattic/node-canvas/wiki/_pages)
 
 ```shell
 brew install pkg-config
