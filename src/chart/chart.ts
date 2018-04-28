@@ -98,7 +98,7 @@ export class Chart {
   rootElement: HTMLElement
   canvas: HTMLCanvasElement
   context: CanvasRenderingContext2D
-  xExtent: ScaleLinear<number, number>
+  xScale: ScaleLinear<number, number>
   width: number = 0
   height: number = 0
   mainDrawer: MainDrawer
@@ -146,7 +146,7 @@ export class Chart {
     this.canvas.style.height = '100%'
     this.canvas.width = this.width
     this.canvas.height = this.height
-    this.resetXExtent()
+    this.resetXScale()
     this.mainDrawer.resize({
       x: 0,
       y: this.mainChartY,
@@ -162,8 +162,8 @@ export class Chart {
       })
     })
   }
-  resetXExtent() {
-    this.xExtent = scaleLinear()
+  resetXScale() {
+    this.xScale = scaleLinear()
       .domain([0, this.options.count])
       .range([0, this.width])
   }

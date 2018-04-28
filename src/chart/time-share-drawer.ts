@@ -5,7 +5,7 @@ import { scaleLinear } from 'd3-scale'
 
 export class TimeShareDrawer implements MainDrawer {
   context: CanvasRenderingContext2D
-  yExtent: ScaleLinear<number, number>
+  yScale: ScaleLinear<number, number>
   frame: Rect
   constructor(public chart: Chart, public data: number[] = []) {
     this.context = chart.context
@@ -15,7 +15,7 @@ export class TimeShareDrawer implements MainDrawer {
   }
   resize(frame: Rect) {
     this.frame = frame;
-    this.resetYExtent()
+    this.resetYScale()
   }
   public draw(){
     this.drawTimeShareLine()
@@ -24,16 +24,16 @@ export class TimeShareDrawer implements MainDrawer {
   @autoResetStyle()
   protected drawTimeShareLine() {
     const { frame } = this;
-    const { xExtent } = this.chart
-    const { context: ctx, yExtent } = this
+    const { xScale } = this.chart
+    const { context: ctx, yScale } = this
     const drawArea = area<number>()
-      .x((d, i) => xExtent(i))
-      .y0(d => yExtent(d))
+      .x((d, i) => xScale(i))
+      .y0(d => yScale(d))
       .y1(frame.height)
       .context(ctx)
     const drawLine = line<number>()
-      .x((d, i) => xExtent(i))
-      .y(d => yExtent(d))
+      .x((d, i) => xScale(i))
+      .y(d => yScale(d))
       .context(ctx)
     ctx.beginPath()
     drawArea(this.data)
@@ -48,12 +48,12 @@ export class TimeShareDrawer implements MainDrawer {
     ctx.lineWidth = 1
     ctx.stroke()
   }
-  protected resetYExtent() {
+  protected resetYScale() {
     const { frame } = this;
     const firstData = this.data[0]
     if (firstData) {
       const flexible = 0.03
-      this.yExtent = scaleLinear()
+      this.yScale = scaleLinear()
         .domain([firstData * (1 - flexible), firstData * (1 + flexible)])
         .range([frame.y + frame.height, frame.y])
     }
