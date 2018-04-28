@@ -1,1 +1,1 @@
-export * from './time-share/time-share';
+export * from './chart/chart';
