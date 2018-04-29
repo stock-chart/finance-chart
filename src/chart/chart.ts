@@ -27,11 +27,11 @@ export interface MainDrawer extends Drawer {
 }
 
 
-interface AuxiliaryOptions {
+export interface AuxiliaryOptions {
   data: any[]
   drawer: DrawerContructor
 }
-interface MainOptions extends AuxiliaryOptions {
+export interface MainOptions extends AuxiliaryOptions {
   drawer: MainDrawerContructor
 }
 

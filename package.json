@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "finance chart for dz-web",
   "main": "index.js",
-  "types": "./types/index.d.ts",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "clean": "rimraf dist/",
     "dist": "npm run clean && webpack --config ./dev/webpack.config.js",
@@ -27,16 +27,8 @@
   },
   "homepage": "",
   "devDependencies": {
-    "@types/d3-array": "^1.2.1",
-    "@types/d3-scale": "^2.0.0",
-    "@types/d3-shape": "^1.2.2",
     "@types/jest": "^22.2.3",
     "autoprefixer": "^8.2.0",
-    "babel-core": "^6.26.0",
-    "babel-loader": "^7.1.4",
-    "babel-preset-env": "^1.6.1",
-    "babel-preset-react": "^6.24.1",
-    "babel-preset-stage-2": "^6.24.1",
     "canvas": "^1.6.10",
     "coveralls": "^3.0.0",
     "css-loader": "^0.28.11",
@@ -65,6 +57,9 @@
     "whatwg-fetch": "^2.0.4"
   },
   "dependencies": {
+    "@types/d3-array": "^1.2.1",
+    "@types/d3-scale": "^2.0.0",
+    "@types/d3-shape": "^1.2.2",
     "d3-array": "^1.2.1",
     "d3-scale": "^2.0.0",
     "d3-shape": "^1.2.0"

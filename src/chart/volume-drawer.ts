@@ -3,6 +3,9 @@ import { ScaleLinear } from "../../node_modules/@types/d3-scale/index";
 import { scaleLinear } from 'd3-scale';
 import { max } from 'd3-array';
 
+/**
+ * Volume chart drawer
+ */
 export class VolumeDrawer implements Drawer {
   context: CanvasRenderingContext2D
   yScale: ScaleLinear<number, number>
@@ -24,7 +27,6 @@ export class VolumeDrawer implements Drawer {
     const { xScale } = this.chart;
     const { context: ctx, yScale } = this
     this.data.forEach((volume, i) => {
-      console.log(volume, yScale(volume));
       ctx.fillStyle = this.calcDeltaPrice(volume, i, this.data) >= 0 ? 'red' : 'green';
       const x = xScale(i),
             y = yScale(volume),

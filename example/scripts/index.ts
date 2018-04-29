@@ -1686,7 +1686,7 @@ const MOCK_PRICE = [
   // }
 ]
 
-const timeShareChart = new Chart({
+new Chart({
   selector: '#time-share',
   resolution: devicePixelRatio >= 2 ? 2 : 1,
   count: 30,
