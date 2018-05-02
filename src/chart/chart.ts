@@ -2,14 +2,15 @@ import { ScaleLinear } from "../../node_modules/@types/d3-scale/index"
 import { scaleLinear } from 'd3-scale'
 import { Rect } from "../graphic/primitive";
 
-
+export const CHART_PADDING = {
+  top: 25,
+  left: 40
+};
 
 export interface DrawerContructor {
   new (chart: Chart, data: any[]): Drawer
 }
-export interface MainDrawerContructor {
-  new (context: Chart, data: any[]): MainDrawer
-}
+
 export interface Drawer {
   chart: Chart
   context: CanvasRenderingContext2D
@@ -18,17 +19,13 @@ export interface Drawer {
   resize(frame: Rect): void
 }
 
-export interface MainDrawer extends Drawer {
-  drawXAxis(rect: Rect): void
-}
-
 export interface ChartOptions {
   /**
    * Selector use in document.querySelector or an document element
    */
   selector: string | HTMLElement
   data: any[],
-  mainDrawer: MainDrawerContructor
+  mainDrawer: DrawerContructor
   resolution?: number
   count?: number
   mainRatio?: number
@@ -91,7 +88,7 @@ export class Chart {
   xScale: ScaleLinear<number, number>
   width: number = 0
   height: number = 0
-  mainDrawer: MainDrawer
+  mainDrawer: Drawer
   auxiliaryDrawer: Drawer[] = []
   selectedAuxiliaryDrawer = 0
   constructor(options: ChartOptions) {

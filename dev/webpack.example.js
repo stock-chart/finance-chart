@@ -12,9 +12,9 @@ module.exports = (env) => {
     base,
     {
       mode: 'development',
-      context: path.resolve(__dirname, '../example/'),
+      context: path.resolve(__dirname, '..'),
       entry: {
-        index: './scripts/index'
+        index: './example/scripts/index'
       },
       output: {
         path: path.resolve(__dirname, '../example-dist/'),

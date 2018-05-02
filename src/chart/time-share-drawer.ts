@@ -1,10 +1,12 @@
-import { MainDrawer, Chart, autoResetStyle } from "./chart"
+import { Chart, autoResetStyle, Drawer } from "./chart"
 import { ScaleLinear } from "../../node_modules/@types/d3-scale/index"
 import { area } from 'd3-shape'
+import { min, max } from 'd3-array';
 import { scaleLinear } from 'd3-scale'
-import { drawLine } from "../paint-utils/index";
+import { drawLine, drawYAxis } from "../paint-utils/index";
 import { Rect } from "../graphic/primitive";
 import { ChartTitle } from "./chart-title";
+import { divide } from "../agorithm/divide";
 
 const TIME_SHARE_THEME = {
   price: '#4B99FB',
@@ -13,7 +15,8 @@ const TIME_SHARE_THEME = {
     'rgba(75, 153, 251, 0)'
   ],
   avg: '#F89D37',
-  titleBackground: '#F2F4F4'
+  titleBackground: '#F2F4F4',
+  gridLine: '#E7EAEB'
 }
 
 const PADDING = {
@@ -25,12 +28,15 @@ export interface TimeShareData {
   avg: number;
 }
 
-export class TimeShareDrawer implements MainDrawer {
+export class TimeShareDrawer implements Drawer {
   context: CanvasRenderingContext2D
   yScale: ScaleLinear<number, number>
   frame: Rect
   titleDrawer: ChartTitle
-  constructor(public chart: Chart, public data: TimeShareData[] = []) {
+  minValue = 0
+  maxValue = 0
+  private data: TimeShareData[]
+  constructor(public chart: Chart, data: TimeShareData[] = []) {
     this.context = chart.context
     this.titleDrawer = new ChartTitle(
       this.context,
@@ -50,9 +56,29 @@ export class TimeShareDrawer implements MainDrawer {
       'white',
       this.chart.options.resolution
     );
+    this.setData(data)
   }
-  public drawXAxis(rect: Rect): void {
+  public setData(data: TimeShareData[]) {
+    this.data = data;
+    this.minValue = min<TimeShareData, number>(data, d => d.price)
+    this.maxValue = max<TimeShareData, number>(data, d => d.price)
+  }
+  protected drawXAxis(rect: Rect) {
     throw 'Not Implemented'
+  }
+  protected drawYAxis() {
+    drawYAxis(
+      this.context,
+      divide(this.bottomValue, this.topValue),
+      this.frame,
+      this.yScale,
+      this.chart.options.resolution,
+      true,
+      TIME_SHARE_THEME.gridLine,
+    )
+  }
+  public drawAxes() {
+    this.drawYAxis();
   }
   resize(frame: Rect) {
     this.frame = frame;
@@ -68,9 +94,11 @@ export class TimeShareDrawer implements MainDrawer {
   }
   @autoResetStyle()
   protected drawTimeShare() {
-    const { frame } = this;
+    const { frame } = this
     const { xScale } = this.chart
     const { context: ctx, yScale } = this
+
+    this.drawAxes();
 
     const drawArea = area<TimeShareData>()
       .x((d, i) => xScale(i))
@@ -100,14 +128,21 @@ export class TimeShareDrawer implements MainDrawer {
       color
     )
   }
+  get topValue() {
+    const flexible = 0.01
+    return this.maxValue * (1 + flexible)
+  }
+  get bottomValue() {
+    const flexible = 0.01
+    return this.minValue * (1 - flexible)
+  }
   protected resetYScale() {
     const { frame } = this;
     const firstData = this.data[0]
     if (firstData) {
-      const flexible = 0.03
       this.yScale = scaleLinear()
-        .domain([firstData.price * (1 - flexible), firstData.price * (1 + flexible)])
-        .range([frame.y + frame.height, frame.y + PADDING.top * this.chart.options.resolution])
+        .domain([this.bottomValue, this.topValue])
+        .range([frame.y + frame.height, frame.y + (PADDING.top + 5) * this.chart.options.resolution])
     }
   }
 }

@@ -1,4 +1,4 @@
-import { Drawer, Chart, autoResetStyle } from "./chart";
+import { Drawer, Chart, autoResetStyle, CHART_PADDING } from "./chart";
 import { ScaleLinear } from "../../node_modules/@types/d3-scale/index";
 import { scaleLinear } from 'd3-scale';
 import { max } from 'd3-array';
@@ -12,10 +12,6 @@ const VOLUME_THEME = {
   titleBar: '#F2F4F4',
   title: '#333'
 }
-
-const PADDING = {
-  top: 25
-};
 
 export interface VolumeDrawerData {
   volume: number
@@ -44,18 +40,17 @@ export class VolumeDrawer implements Drawer {
       this.chart.options.resolution
     )
   }
-
   public resize(frame: Rect): void {
     this.frame = frame
-    this.resetYScale();
+    this.resetYScale()
   }
   public draw(): void {
     const { frame } = this
     this.titleDrawer.draw({
       ...frame,
-      height: PADDING.top * this.chart.options.resolution
+      height: CHART_PADDING.top * this.chart.options.resolution
     })
-    this.drawVolumes();
+    this.drawVolumes()
   }
   @autoResetStyle()
   protected drawVolumes() {
@@ -75,7 +70,7 @@ export class VolumeDrawer implements Drawer {
     const { frame } = this;
     this.yScale = scaleLinear()
       .domain([0, max(this.data, d => d.volume)])
-      .range([frame.y + frame.height, frame.y + PADDING.top * this.chart.options.resolution])
+      .range([frame.y + frame.height, frame.y + CHART_PADDING.top * this.chart.options.resolution])
   }
   calcDeltaPrice(currentValue: VolumeDrawerData, currentIndex: number, data: VolumeDrawerData[]): number {
     if (currentIndex === 0) {
