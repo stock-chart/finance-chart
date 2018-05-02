@@ -1,12 +1,8 @@
 import { ScaleLinear } from "../../node_modules/@types/d3-scale/index"
 import { scaleLinear } from 'd3-scale'
+import { Rect } from "../graphic/primitive";
 
-export interface Rect {
-  x: number
-  y: number
-  width: number
-  height: number
-}
+
 
 export interface DrawerContructor {
   new (chart: Chart, data: any[]): Drawer
@@ -26,32 +22,24 @@ export interface MainDrawer extends Drawer {
   drawXAxis(rect: Rect): void
 }
 
-
-export interface AuxiliaryOptions {
-  data: any[]
-  drawer: DrawerContructor
-}
-export interface MainOptions extends AuxiliaryOptions {
-  drawer: MainDrawerContructor
-}
-
 export interface ChartOptions {
   /**
    * Selector use in document.querySelector or an document element
    */
   selector: string | HTMLElement
-  main: MainOptions
+  data: any[],
+  mainDrawer: MainDrawerContructor
   resolution?: number
   count?: number
   mainRatio?: number
-  auxiliaries?: AuxiliaryOptions[]
+  auxiliaryDrawers?: DrawerContructor[]
 }
 
 
 export function autoResetStyle () {
   return function(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const raw = target[propertyKey]
-    descriptor.value = function (this: Chart) {
+    descriptor.value = function (this: { context: CanvasRenderingContext2D }) {
       this.context.save()
       const r = raw.apply(this, arguments)
       this.context.restore()
@@ -74,21 +62,23 @@ export function shouldRedraw() {
 function createOptions(
   {
     selector,
+    data = [],
     resolution = 1,
     count = 240,
-    main,
+    mainDrawer,
     mainRatio = 0.65,
-    auxiliaries = [],
+    auxiliaryDrawers = [],
   }: ChartOptions
 ) {
-  if (auxiliaries.length === 0) mainRatio = 1
+  if (auxiliaryDrawers.length === 0) mainRatio = 1
   return {
     selector,
+    data,
     resolution,
     count,
-    main,
+    mainDrawer,
     mainRatio,
-    auxiliaries
+    auxiliaryDrawers
   }
 }
 
@@ -131,9 +121,9 @@ export class Chart {
     window.addEventListener('resize', this.resize)
     this.rootElement.appendChild(this.canvas)
     this.context = this.canvas.getContext('2d')
-    this.mainDrawer = new options.main.drawer(this, options.main.data)
-    options.auxiliaries.forEach((options) => {
-      this.auxiliaryDrawer.push(new options.drawer(this, options.data))
+    this.mainDrawer = new options.mainDrawer(this, options.data)
+    options.auxiliaryDrawers.forEach((drawer) => {
+      this.auxiliaryDrawer.push(new drawer(this, options.data))
     })
     this.resize()
   }
