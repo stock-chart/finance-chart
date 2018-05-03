@@ -21,7 +21,7 @@ export interface ChartOptions {
    */
   selector: string | HTMLElement
   data: any[],
-  mainDrawer: DrawerContructor
+  mainDrawer?: DrawerContructor
   resolution?: number
   count?: number
   mainRatio?: number
@@ -63,7 +63,13 @@ function createOptions(
     auxiliaryDrawers = [],
   }: ChartOptions
 ) {
-  if (auxiliaryDrawers.length === 0) mainRatio = 1
+  if (mainDrawer) {
+    if (auxiliaryDrawers.length === 0) {
+      mainRatio = 1
+    }
+  } else {
+    mainRatio = 0
+  }
   return {
     selector,
     data,
@@ -115,7 +121,9 @@ export class Chart {
     window.addEventListener('resize', this.resize)
     this.rootElement.appendChild(this.canvas)
     this.context = this.canvas.getContext('2d')
-    this.mainDrawer = new options.mainDrawer(this, options.data)
+    if (options.mainDrawer) {
+      this.mainDrawer = new options.mainDrawer(this, options.data)
+    }
     options.auxiliaryDrawers.forEach((drawer) => {
       this.auxiliaryDrawer.push(new drawer(this, options.data))
     })
@@ -131,7 +139,7 @@ export class Chart {
     this.canvas.width = this.width
     this.canvas.height = this.height
     this.resetXScale()
-    this.mainDrawer.resize({
+    this.mainDrawer && this.mainDrawer.resize({
       x: 0,
       y: this.mainChartY,
       width: this.width,
@@ -166,8 +174,9 @@ export class Chart {
         if (process.env.NODE_ENV === 'development') {
           console.time('rendering cost');
         }
-        this.mainDrawer.draw()
-        this.auxiliaryDrawer[this.selectedAuxiliaryDrawer].draw()
+        this.mainDrawer && this.mainDrawer.draw()
+        this.auxiliaryDrawer[this.selectedAuxiliaryDrawer] &&
+          this.auxiliaryDrawer[this.selectedAuxiliaryDrawer].draw()
         this.requestAnimationFrameId = null
 
         if (process.env.NODE_ENV === 'development') {
