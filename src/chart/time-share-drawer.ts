@@ -78,7 +78,7 @@ export class TimeShareDrawer implements Drawer {
   protected drawYAxis() {
     drawYAxis(
       this.context,
-      divide(this.bottomValue, this.topValue).map(n => ({ value: n })),
+      divide(this.bottomValue(), this.topValue()).map(n => ({ value: n })),
       this.frame,
       this.yScale,
       this.chart.options.resolution,
@@ -159,19 +159,29 @@ export class TimeShareDrawer implements Drawer {
       color
     )
   }
-  get topValue() {
-    const flexible = 0.01
-    return this.maxValue * (1 + flexible)
-  }
-  get bottomValue() {
-    const flexible = 0.01
-    return this.minValue * (1 - flexible)
-  }
+  topValue = ((lastMaxValue = 0, lastTopValue = Number.MIN_SAFE_INTEGER) => 
+    () => {
+      const top = this.maxValue * (1.01)
+      if (top > lastTopValue) {
+        lastTopValue = top
+      }
+      return lastTopValue
+    }
+  )()
+  bottomValue = ((lastMinValue = 0, lastBottomValue = Number.MAX_SAFE_INTEGER) => 
+    () => {
+      const bottom = this.minValue * (0.99)
+      if (bottom < lastBottomValue) {
+        lastBottomValue = bottom
+      }
+      return lastBottomValue
+    }
+  )()
   protected resetYScale() {
     const { frame } = this;
     const resolution = this.chart.options.resolution
     this.yScale = scaleLinear()
-      .domain([this.bottomValue, this.topValue])
+      .domain([this.bottomValue(), this.topValue()])
       .range([frame.y + frame.height - this.xAxisTickHeight, frame.y + (PADDING.top + 15) * resolution])
   }
 }
