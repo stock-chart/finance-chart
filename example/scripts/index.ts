@@ -1,7 +1,7 @@
 import './index.scss'
 import { TimeShareDrawer } from '../../src/chart/time-share-drawer'
 import { Chart } from '../../src/chart/chart'
-import { VolumeDrawer, VolumeDrawerData } from '../../src/chart/volume-drawer'
+import { VolumeDrawer, VolumeData } from '../../src/chart/volume-drawer'
 
 const MOCK_PRICE = [
   // {
@@ -1698,7 +1698,7 @@ new Chart({
   mainDrawer: TimeShareDrawer,
   auxiliaryDrawers: [
     class CustomVolumeDrawer extends VolumeDrawer {
-      calcDeltaPrice(currentValue: VolumeDrawerData, currentIndex: number, data: VolumeDrawerData[]): number {
+      calcDeltaPrice(currentValue: VolumeData, currentIndex: number, data: VolumeData[]): number {
         if (currentIndex === 0) return 0;
         return super.calcDeltaPrice(currentValue, currentIndex, data);
       }

@@ -2,11 +2,6 @@ import { ScaleLinear } from "../../node_modules/@types/d3-scale/index"
 import { scaleLinear } from 'd3-scale'
 import { Rect } from "../graphic/primitive";
 
-export const CHART_PADDING = {
-  top: 25,
-  left: 40
-};
-
 export interface DrawerContructor {
   new (chart: Chart, data: any[]): Drawer
 }
@@ -17,6 +12,7 @@ export interface Drawer {
   frame: Rect
   draw(): void
   resize(frame: Rect): void
+  setData(data: Object[]): void
 }
 
 export interface ChartOptions {
@@ -155,13 +151,19 @@ export class Chart {
       .range([0, this.width])
   }
   public drawAtEndOfFrame() {
-    console.log('will draw at end of frame')
     if (!this.willRedrawAtEndOfFrame) {
       this.willRedrawAtEndOfFrame = true
       requestAnimationFrame(() => {
+        if (process.env.NODE_ENV === 'development') {
+          console.time('rendering cost');
+        }
         this.mainDrawer.draw()
         this.auxiliaryDrawer[this.selectedAuxiliaryDrawer].draw()
         this.willRedrawAtEndOfFrame = false
+
+        if (process.env.NODE_ENV === 'development') {
+          console.timeEnd('rendering cost');
+        }
       })
     }
   }

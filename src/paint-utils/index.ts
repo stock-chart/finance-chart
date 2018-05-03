@@ -38,30 +38,29 @@ export function drawText(ctx: CanvasRenderingContext2D, text: string, position: 
 
 export function drawYAxis(
   ctx: CanvasRenderingContext2D,
-  tickValues: number[],
+  tickValues: { value: number; color?: string; }[],
   frame: Rect,
   scale: ScaleLinear<number, number>,
   resolution = 1,
   withLine = true,
   lineColor = 'black',
-  formatter = (v: number) => v.toString()
+  formatter: (v: number, i: number) => string = (v: number) => v.toFixed(2)
 ) {
     ctx.save()
     ctx.strokeStyle = lineColor
     ctx.beginPath()
     ctx.lineWidth = 0.8
-    tickValues.forEach(v => {
-      const y = scale(v)
-      ctx.moveTo(40 * resolution, y)
+    ctx.font = `${11 * resolution}px serif`
+    ctx.textAlign = 'right'
+    ctx.fillStyle = 'black'
+    ctx.textBaseline = 'bottom'
+    tickValues.forEach(({value, color = 'black' }, i) => {
+      const y = scale(value)
+      ctx.moveTo(0, y)
       ctx.lineTo(frame.width, y)
+      ctx.fillStyle = color
+      ctx.fillText(formatter(value, i), 40 * resolution, y)
     })
     ctx.stroke()
     ctx.restore()
-}
-export function drawHorizontalTick(
-  ctx: CanvasRenderingContext2D,
-  text: string,
-  y: number,
-  textColor = 'black',
-  withLine = true) {
 }

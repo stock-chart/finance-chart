@@ -60,8 +60,8 @@ export class TimeShareDrawer implements Drawer {
   }
   public setData(data: TimeShareData[]) {
     this.data = data;
-    this.minValue = min<TimeShareData, number>(data, d => d.price)
-    this.maxValue = max<TimeShareData, number>(data, d => d.price)
+    this.minValue = min(data, d => d.price)
+    this.maxValue = max(data, d => d.price)
   }
   protected drawXAxis(rect: Rect) {
     throw 'Not Implemented'
@@ -69,7 +69,7 @@ export class TimeShareDrawer implements Drawer {
   protected drawYAxis() {
     drawYAxis(
       this.context,
-      divide(this.bottomValue, this.topValue),
+      divide(this.bottomValue, this.topValue).map(n => ({ value: n })),
       this.frame,
       this.yScale,
       this.chart.options.resolution,
@@ -91,14 +91,13 @@ export class TimeShareDrawer implements Drawer {
       height: PADDING.top * this.chart.options.resolution
     })
     this.drawTimeShare()
+    this.drawAxes();
   }
   @autoResetStyle()
   protected drawTimeShare() {
     const { frame } = this
     const { xScale } = this.chart
     const { context: ctx, yScale } = this
-
-    this.drawAxes();
 
     const drawArea = area<TimeShareData>()
       .x((d, i) => xScale(i))
@@ -142,7 +141,7 @@ export class TimeShareDrawer implements Drawer {
     if (firstData) {
       this.yScale = scaleLinear()
         .domain([this.bottomValue, this.topValue])
-        .range([frame.y + frame.height, frame.y + (PADDING.top + 5) * this.chart.options.resolution])
+        .range([frame.y + frame.height, frame.y + (PADDING.top + 15) * this.chart.options.resolution])
     }
   }
 }
