@@ -77,7 +77,7 @@ function createOptions(
 
 export class Chart {
   options: ChartOptions
-  willRedrawAtEndOfFrame = false
+  requestAnimationFrameId: number = null
   rootElement: HTMLElement
   canvas: HTMLCanvasElement
   context: CanvasRenderingContext2D
@@ -87,6 +87,7 @@ export class Chart {
   mainDrawer: Drawer
   auxiliaryDrawer: Drawer[] = []
   selectedAuxiliaryDrawer = 0
+  destroyed = false
   constructor(options: ChartOptions) {
     this.options = createOptions(options)
     this.resize = this.resize.bind(this)
@@ -145,21 +146,29 @@ export class Chart {
       })
     })
   }
+  @shouldRedraw()
+  public setData(data: any) {
+    if (this.destroyed) {
+      throw new Error('Chart has been destroyed, method#setData didn\'t allow to be called')
+    }
+    this.mainDrawer && this.mainDrawer.setData(data)
+    this.auxiliaryDrawer && this.auxiliaryDrawer.forEach(drawer => drawer.setData(data))
+  }
   resetXScale() {
     this.xScale = scaleLinear()
       .domain([0, this.options.count])
       .range([0, this.width])
   }
   public drawAtEndOfFrame() {
-    if (!this.willRedrawAtEndOfFrame) {
-      this.willRedrawAtEndOfFrame = true
-      requestAnimationFrame(() => {
+    if (!this.requestAnimationFrameId) {
+      this.requestAnimationFrameId = requestAnimationFrame(() => {
+        this.context.clearRect(0, 0, this.width, this.height)
         if (process.env.NODE_ENV === 'development') {
           console.time('rendering cost');
         }
         this.mainDrawer.draw()
         this.auxiliaryDrawer[this.selectedAuxiliaryDrawer].draw()
-        this.willRedrawAtEndOfFrame = false
+        this.requestAnimationFrameId = null
 
         if (process.env.NODE_ENV === 'development') {
           console.timeEnd('rendering cost');
@@ -168,7 +177,11 @@ export class Chart {
     }
   }
   destroy() {
+    this.destroyed = true
     window.removeEventListener('resize', this.resize)
+    if (this.requestAnimationFrameId) {
+      cancelAnimationFrame(this.requestAnimationFrameId)
+    }
     this.rootElement.removeChild(this.canvas)
 
     // clear referecne to Chart instance
@@ -176,5 +189,7 @@ export class Chart {
     this.auxiliaryDrawer.forEach(drawer => {
       drawer.chart = null
     })
+    this.mainDrawer = null
+    this.auxiliaryDrawer = null
   }
 }

@@ -44,7 +44,8 @@ export function drawYAxis(
   resolution = 1,
   withLine = true,
   lineColor = 'black',
-  formatter: (v: number, i: number) => string = (v: number) => v.toFixed(2)
+  formatter: (v: number, i: number) => string = (v: number) => v.toFixed(2),
+  align: 'left' | 'right' = 'left'
 ) {
     ctx.save()
     ctx.strokeStyle = lineColor
@@ -52,14 +53,46 @@ export function drawYAxis(
     ctx.lineWidth = 0.8
     ctx.font = `${11 * resolution}px serif`
     ctx.textAlign = 'right'
-    ctx.fillStyle = 'black'
     ctx.textBaseline = 'bottom'
     tickValues.forEach(({value, color = 'black' }, i) => {
       const y = scale(value)
-      ctx.moveTo(0, y)
-      ctx.lineTo(frame.width, y)
+      if (withLine) {
+        ctx.moveTo(0, y)
+        ctx.lineTo(frame.width, y)
+      }
       ctx.fillStyle = color
       ctx.fillText(formatter(value, i), 40 * resolution, y)
+    })
+    ctx.stroke()
+    ctx.restore()
+}
+
+export function drawXAxis(
+  ctx: CanvasRenderingContext2D,
+  tickValues: number[],
+  frame: Rect,
+  scale: ScaleLinear<number, number>,
+  resolution = 1,
+  withTick = true,
+  lineColor = 'black',
+  formatter: (v: number, i: number) => string = (v: number) => v.toFixed(2),
+) {
+    ctx.save()
+    ctx.strokeStyle = lineColor
+    ctx.beginPath()
+    ctx.lineWidth = 0.8
+    ctx.font = `${11 * resolution}px serif`
+    ctx.textAlign = 'left'
+    ctx.fillStyle = 'black'
+    ctx.textBaseline = 'top'
+    const bottomY = frame.y + frame.height
+    tickValues.forEach((value, i) => {
+      const x = scale(value)
+      ctx.moveTo(x, frame.y)
+      ctx.lineTo(x, bottomY)
+      if (withTick) {
+        ctx.fillText(formatter(value, i), x, bottomY)
+      }
     })
     ctx.stroke()
     ctx.restore()

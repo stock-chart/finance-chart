@@ -4,7 +4,7 @@ import { scaleLinear } from 'd3-scale';
 import { max, min } from 'd3-array';
 import { Rect } from "../graphic/primitive";
 import { ChartTitle } from "./chart-title";
-import { drawYAxis } from "../paint-utils/index";
+import { drawYAxis, drawXAxis } from "../paint-utils/index";
 import { divide } from "../agorithm/divide";
 
 const VOLUME_THEME = {
@@ -23,7 +23,7 @@ export interface VolumeData {
   volume: number
 }
 
-const volumeLabel = (v: number|string) => `VOL: ${v}`
+const volumeLabel = (v: number) => `VOL: ${v.toFixed(2)}`
 /**
  * Volume chart drawer
  */
@@ -31,6 +31,7 @@ export class VolumeDrawer implements Drawer {
   context: CanvasRenderingContext2D
   yScale: ScaleLinear<number, number>
   frame: Rect
+  chartFrame: Rect
   titleDrawer: ChartTitle
   minValue = 0
   maxValue = 0
@@ -54,10 +55,16 @@ export class VolumeDrawer implements Drawer {
   }
   public resize(frame: Rect): void {
     this.frame = frame
+    this.chartFrame = {
+      ...frame,
+      y: frame.y + this.titleHeight,
+      height: frame.height - this.titleHeight
+    }
     this.resetYScale()
   }
   public draw(): void {
     const { frame, data } = this
+    this.drawAxes()
     if (data.length === 0 ) return
     this.titleDrawer.setLabel(0, volumeLabel(data[data.length - 1].volume))
     this.titleDrawer.draw({
@@ -65,14 +72,30 @@ export class VolumeDrawer implements Drawer {
       height: PADDING.top * this.chart.options.resolution
     })
     this.drawVolumes()
-    this.drawAxes()
   }
   public setData(data: VolumeData[]) {
     this.data = data
     this.minValue = min(data, d => d.volume)
     this.maxValue = max(data, d => d.volume)
   }
+  get titleHeight() {
+    return PADDING.top * this.chart.options.resolution
+  }
+  protected drawXAxis() {
+    const tickValues = divide(0, this.chart.options.count, 5)
+    tickValues.pop()
+    drawXAxis(
+      this.context,
+      tickValues,
+      this.chartFrame,
+      this.chart.xScale,
+      this.chart.options.resolution,
+      true,
+      VOLUME_THEME.gridLine,
+    )
+  }
   protected drawAxes() {
+    this.drawXAxis()
     this.drawYAxis()
   }
   protected drawYAxis() {
