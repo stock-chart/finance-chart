@@ -872,8 +872,8 @@ function createTimeShare() {
       time: last.time + 1,
       price: last.price * (Math.random() * 0.02 - 0.01 + 1),
       avg: last.avg * (Math.random() * 0.02 - 0.01 + 1),
-      volume: last.volume * (Math.random() * 0.6 - 0.3 + 1),
-      holdAmount: last.holdAmount * (Math.random() * 0.6 - 0.3 + 1),
+      volume: Math.round(last.volume * (Math.random() * 0.6 - 0.3 + 1)),
+      holdAmount: Math.round(last.holdAmount * (Math.random() * 0.6 - 0.3 + 1)),
     }
     MOCK_TIME_SHARE.push(next)
     timeShareChart.setData(MOCK_TIME_SHARE)

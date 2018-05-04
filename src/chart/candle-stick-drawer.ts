@@ -125,7 +125,7 @@ export class CandleStickDrawer implements Drawer {
             minV = Math.min(d.close, d.open),
             y = yScale(maxV),
             height = Math.abs(yScale(d.close) - yScale(d.open)),
-            width = xScale(1) - 2,
+            width = xScale(1) - xScale(0) - 2,
             x = xScale(i) - width / 2
       if (d.close > d.open) {
         ctx.fillStyle = ctx.strokeStyle = THEME.rise

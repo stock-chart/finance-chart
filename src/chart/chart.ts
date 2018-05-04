@@ -2,6 +2,11 @@ import { ScaleLinear } from "../../node_modules/@types/d3-scale/index"
 import { scaleLinear } from 'd3-scale'
 import { Rect } from "../graphic/primitive";
 
+const PADDING = {
+  left: 10,
+  right: 10
+}
+
 export interface DrawerContructor {
   new (chart: Chart, data: any[]): Drawer
 }
@@ -163,9 +168,11 @@ export class Chart {
     this.auxiliaryDrawer && this.auxiliaryDrawer.forEach(drawer => drawer.setData(data))
   }
   resetXScale() {
+    const { resolution } = this.options;
     this.xScale = scaleLinear()
       .domain([0, this.options.count])
-      .range([0, this.width])
+      // .range([0, this.width])
+      .range([PADDING.left * resolution, this.width - PADDING.right * resolution])
   }
   public drawAtEndOfFrame() {
     if (!this.requestAnimationFrameId) {

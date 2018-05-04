@@ -125,7 +125,7 @@ export class VolumeDrawer implements Drawer {
       const x = xScale(i),
             y = yScale(d.volume),
             height = frame.height - (y - frame.y),
-            width = xScale(1) - 2;
+            width = xScale(1) - xScale(0) - 2;
       ctx.fillRect(x - width / 2, y, width, height)
     });
   }

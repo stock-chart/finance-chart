@@ -11,7 +11,7 @@ module.exports = (env) => {
   const config = webpackMerge.smart(
     base,
     {
-      mode: 'production',
+      mode: 'development',
       context: path.resolve(__dirname, '..'),
       entry: {
         index: './example/scripts/index'
