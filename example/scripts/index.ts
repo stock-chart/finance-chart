@@ -1484,7 +1484,20 @@ function createKLine() {
       "ma20": 4.70850019454956
     }
   ]
-
+  CandleStickDrawer.MAIndicators = [
+    {
+      key: 'ma5',
+      color: '#FF8E29'
+    },
+    {
+      key: 'ma10',
+      color: '#ADE3F3'
+    },
+    {
+      key: 'ma20',
+      color: '#EC6ED9'
+    }
+  ]
   const klineChart = new Chart({
     selector: '#candle-stick',
     resolution: devicePixelRatio >= 2 ? 2 : 1,
@@ -1501,5 +1514,5 @@ function createKLine() {
     ]
   })
 }
-createTimeShare()
+// createTimeShare()
 createKLine()

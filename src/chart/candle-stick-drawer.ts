@@ -1,13 +1,13 @@
 import { Chart, autoResetStyle, Drawer } from "./chart"
 import { ScaleLinear } from "../../node_modules/@types/d3-scale/index"
 import { area } from 'd3-shape'
-import { min, max } from 'd3-array';
 import { scaleLinear } from 'd3-scale'
 import { drawLine, drawYAxis, drawXAxis } from "../paint-utils/index";
 import { Rect } from "../graphic/primitive";
 import { ChartTitle } from "./chart-title";
 import { divide } from "../agorithm/divide";
 import { formateDate } from "../agorithm/date";
+import { trimNulls } from "../agorithm/arrays";
 
 const THEME = {
   rise: '#F55559',
@@ -29,9 +29,17 @@ export interface CandleStickData {
   close: number;
   high: number;
   low: number;
+  [key: string]: number|string
+}
+
+export interface MAIndicator {
+  key: string;
+  color: string;
 }
 
 export class CandleStickDrawer implements Drawer {
+  static MAIndicators: MAIndicator[] = []
+
   context: CanvasRenderingContext2D
   yScale: ScaleLinear<number, number>
   frame: Rect = { x: 0, y: 0, width: 0, height: 0}
@@ -54,8 +62,24 @@ export class CandleStickDrawer implements Drawer {
   }
   public setData(data: CandleStickData[]) {
     this.data = data;
-    this.minValue = min(data.map(d => d.low))
-    this.maxValue = max(data.map(d => d.high))
+    const keys = this.MAIndicators.map(d => d.key)
+    keys.push('low', 'high')
+    let minV = Number.MAX_SAFE_INTEGER
+    let maxV = Number.MIN_SAFE_INTEGER
+    for (let i = 0, lenI = data.length; i < lenI; ++i) {
+      keys.forEach((key) => {
+        const v = data[i][key] as number
+        // ma data may be null, ignore it
+        if (v === null) return
+        if (v < minV) {
+          minV = v
+        } else if (v > maxV) {
+          maxV = v
+        }
+      })
+    }
+    this.minValue = minV
+    this.maxValue = maxV
     this.resetYScale()
   }
   get titleHeight() {
@@ -63,6 +87,9 @@ export class CandleStickDrawer implements Drawer {
   }
   get xAxisTickHeight() {
     return PADDING.bottom * this.chart.options.resolution
+  }
+  get MAIndicators() {
+    return Object.getPrototypeOf(this).constructor.MAIndicators as MAIndicator[]
   }
   protected drawYAxis() {
     drawYAxis(
@@ -113,6 +140,22 @@ export class CandleStickDrawer implements Drawer {
       height: this.titleHeight
     })
     this.drawCandles()
+    this.drawMA()
+  }
+  protected drawMA() {
+    const { data, yScale } = this
+    const { xScale } = this.chart
+    this.MAIndicators.forEach(({key, color}) => {
+      const trimed = trimNulls(data.map(d => d[key] as number))
+      drawLine(
+        this.context,
+        trimed.result.map((d, i) => ({
+          x: xScale(i + trimed.deleted),
+          y: yScale(d)
+        })),
+        color
+      )
+    })
   }
   @autoResetStyle()
   protected drawCandles() {
@@ -141,19 +184,6 @@ export class CandleStickDrawer implements Drawer {
       ctx.fillRect(x + width / 2, yScale(minV), 1, yScale(d.low) - yScale(minV))
     })
   }
-  // @autoResetStyle()
-  // protected drawLine(data: number[], color = 'black') {
-  //   const { yScale, context: ctx } = this
-  //   const { xScale } = this.chart
-  //   drawLine(
-  //     ctx,
-  //     data.map((item, i) => ({
-  //       x: xScale(i),
-  //       y: yScale(item),
-  //     })),
-  //     color
-  //   )
-  // }
   topValue = ((lastMaxValue = 0, lastTopValue = Number.MIN_SAFE_INTEGER) => 
     () => {
       const top = this.maxValue * (1.01)
