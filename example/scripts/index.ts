@@ -1514,5 +1514,5 @@ function createKLine() {
     ]
   })
 }
-// createTimeShare()
+createTimeShare()
 createKLine()
