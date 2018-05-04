@@ -11,7 +11,7 @@ const VOLUME_THEME = {
   rise: '#F55559',
   fall: '#7DCE8D',
   volumeText: '#F78081',
-  titleBar: '#F2F4F4',
+  titleBackground: '#F2F4F4',
   title: '#333',
   gridLine: '#E7EAEB'
 }
@@ -30,8 +30,8 @@ const volumeLabel = (v: number) => `VOL: ${v.toFixed(2)}`
 export class VolumeDrawer implements Drawer {
   context: CanvasRenderingContext2D
   yScale: ScaleLinear<number, number>
-  frame: Rect
-  chartFrame: Rect
+  frame: Rect = { x: 0, y: 0, width: 0, height: 0}
+  chartFrame: Rect = { x: 0, y: 0, width: 0, height: 0}
   titleDrawer: ChartTitle
   minValue = 0
   maxValue = 0
@@ -47,7 +47,7 @@ export class VolumeDrawer implements Drawer {
           color: VOLUME_THEME.volumeText
         }
       ],
-      VOLUME_THEME.titleBar,
+      VOLUME_THEME.titleBackground,
       VOLUME_THEME.title,
       this.chart.options.resolution
     )
@@ -64,8 +64,8 @@ export class VolumeDrawer implements Drawer {
   }
   public draw(): void {
     const { frame, data } = this
-    this.drawAxes()
     if (data.length === 0 ) return
+    this.drawAxes()
     this.titleDrawer.setLabel(0, volumeLabel(data[data.length - 1].volume))
     this.titleDrawer.draw({
       ...frame,
@@ -77,6 +77,7 @@ export class VolumeDrawer implements Drawer {
     this.data = data
     this.minValue = min(data, d => d.volume)
     this.maxValue = max(data, d => d.volume)
+    this.resetYScale()
   }
   get titleHeight() {
     return PADDING.top * this.chart.options.resolution
@@ -115,16 +116,17 @@ export class VolumeDrawer implements Drawer {
   }
   @autoResetStyle()
   protected drawVolumes() {
-    const { frame } = this;
-    const { xScale } = this.chart;
+    const { frame } = this
+    const { xScale } = this.chart
     const { context: ctx, yScale } = this
+
     this.data.forEach((d, i) => {
       ctx.fillStyle = this.calcDeltaPrice(d, i, this.data) >= 0 ? VOLUME_THEME.rise : VOLUME_THEME.fall;
       const x = xScale(i),
             y = yScale(d.volume),
             height = frame.height - (y - frame.y),
             width = xScale(1) - 2;
-      ctx.fillRect(x - width / 2, y, width, height);
+      ctx.fillRect(x - width / 2, y, width, height)
     });
   }
   protected resetYScale() {

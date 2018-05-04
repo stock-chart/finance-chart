@@ -8,10 +8,10 @@ module.exports = (env) => {
   const base = devConfig(env);
   delete base.entry;
   delete base.externals;
-  const config = webpackMerge(
+  const config = webpackMerge.smart(
     base,
     {
-      mode: 'development',
+      mode: 'production',
       context: path.resolve(__dirname, '..'),
       entry: {
         index: './example/scripts/index'
@@ -19,6 +19,21 @@ module.exports = (env) => {
       output: {
         path: path.resolve(__dirname, '../example-dist/'),
         filename: 'example.js'
+      },
+      module: {
+        rules: [
+          {
+            test: /\.tsx?$/,
+            use: [
+              {
+                loader: 'ts-loader',
+                options: {
+                  configFile: 'tsconfig.example.json'
+                }
+              },
+            ]
+          }
+        ]
       },
       plugins: [
         new HtmlWebpackPlugin({

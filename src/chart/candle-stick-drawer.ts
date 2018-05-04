@@ -9,14 +9,12 @@ import { ChartTitle } from "./chart-title";
 import { divide } from "../agorithm/divide";
 import { formateDate } from "../agorithm/date";
 
-const TIME_SHARE_THEME = {
-  price: '#4B99FB',
-  linearGradient: [
-    'rgba(75, 153, 251, 0.4)',
-    'rgba(75, 153, 251, 0)'
-  ],
-  avg: '#F89D37',
+const THEME = {
+  rise: '#F55559',
+  fall: '#7DCE8D',
+  same: '#333',
   titleBackground: '#F2F4F4',
+  title: '#333',
   gridLine: '#E7EAEB'
 }
 
@@ -25,13 +23,15 @@ const PADDING = {
   bottom: 25,
 };
 
-export interface TimeShareData {
-  price: number;
-  avg: number;
-  time: number;
+export interface CandleStickData {
+  time: string;
+  open: number;
+  close: number;
+  high: number;
+  low: number;
 }
 
-export class TimeShareDrawer implements Drawer {
+export class CandleStickDrawer implements Drawer {
   context: CanvasRenderingContext2D
   yScale: ScaleLinear<number, number>
   frame: Rect = { x: 0, y: 0, width: 0, height: 0}
@@ -39,34 +39,23 @@ export class TimeShareDrawer implements Drawer {
   titleDrawer: ChartTitle
   minValue = 0
   maxValue = 0
-  private data: TimeShareData[]
-  constructor(public chart: Chart, data: TimeShareData[] = []) {
+  private data: CandleStickData[]
+  constructor(public chart: Chart, data: CandleStickData[] = []) {
     this.context = chart.context
     this.titleDrawer = new ChartTitle(
       this.context,
-      null, [
-        {
-          x: 0,
-          label: '分时走势',
-          color: TIME_SHARE_THEME.price
-        },
-        {
-          x: 50,
-          label: '均线',
-          color: TIME_SHARE_THEME.avg
-        }
+      'MA', [
       ],
-      TIME_SHARE_THEME.titleBackground,
-      'white',
+      THEME.titleBackground,
+      THEME.title,
       this.chart.options.resolution
     );
     this.setData(data)
   }
-  public setData(data: TimeShareData[]) {
+  public setData(data: CandleStickData[]) {
     this.data = data;
-    const merge = [...data.map(d => d.price), ...data.map(d => d.avg)]
-    this.minValue = min(merge)
-    this.maxValue = max(merge)
+    this.minValue = min(data.map(d => d.low))
+    this.maxValue = max(data.map(d => d.high))
     this.resetYScale()
   }
   get titleHeight() {
@@ -83,7 +72,7 @@ export class TimeShareDrawer implements Drawer {
       this.yScale,
       this.chart.options.resolution,
       true,
-      TIME_SHARE_THEME.gridLine,
+      THEME.gridLine,
     )
   }
   protected drawXAxis() {
@@ -96,11 +85,10 @@ export class TimeShareDrawer implements Drawer {
       this.chart.xScale,
       this.chart.options.resolution,
       true,
-      TIME_SHARE_THEME.gridLine,
-      t => {
-        const d = new Date()
-        d.setTime(t * 60 * 1000)
-        return formateDate(d, 'HH:mm')
+      THEME.gridLine,
+      (t, i) => {
+        const d = new Date(this.data[i].time)
+        return formateDate(d, 'yyyy/MM/dd')
       }
     )
   }
@@ -124,41 +112,48 @@ export class TimeShareDrawer implements Drawer {
       ...frame,
       height: this.titleHeight
     })
-    this.drawTimeShare()
+    this.drawCandles()
   }
   @autoResetStyle()
-  protected drawTimeShare() {
+  protected drawCandles() {
     const { frame } = this
     const { xScale } = this.chart
     const { context: ctx, yScale } = this
-    const drawArea = area<TimeShareData>()
-      .x((d, i) => xScale(i))
-      .y0(d => yScale(d.price))
-      .y1(frame.height - this.xAxisTickHeight)
-      .context(ctx)
-    ctx.beginPath()
-    drawArea(this.data)
-    const linearGradient = ctx.createLinearGradient(0, 0, 0, frame.height)
-    TIME_SHARE_THEME.linearGradient.forEach((color, i) =>
-      linearGradient.addColorStop(i, color))
-    ctx.fillStyle = linearGradient
-    ctx.fill()
-    this.drawLine('price', TIME_SHARE_THEME.price)
-    this.drawLine('avg', TIME_SHARE_THEME.avg)
+    
+    this.data.forEach((d, i) => {
+      const maxV = Math.max(d.close, d.open),
+            minV = Math.min(d.close, d.open),
+            y = yScale(maxV),
+            height = Math.abs(yScale(d.close) - yScale(d.open)),
+            width = xScale(1) - 2,
+            x = xScale(i) - width / 2
+      if (d.close > d.open) {
+        ctx.fillStyle = ctx.strokeStyle = THEME.rise
+        ctx.strokeRect(x, y, width, height)
+      } else if (d.close < d.open) {
+        ctx.fillStyle= ctx.strokeStyle =  THEME.fall
+        ctx.fillRect(x, y, width, height)
+      } else {
+        ctx.fillStyle = ctx.strokeStyle =  THEME.same
+        ctx.fillRect(x, y, width, 1)
+      }
+      ctx.fillRect(x + width / 2, yScale(d.high), 1, yScale(maxV) - yScale(d.high))
+      ctx.fillRect(x + width / 2, yScale(minV), 1, yScale(d.low) - yScale(minV))
+    })
   }
-  @autoResetStyle()
-  protected drawLine(key: keyof TimeShareData, color = 'black') {
-    const { yScale, context: ctx } = this
-    const { xScale } = this.chart
-    drawLine(
-      ctx,
-      this.data.map((item, i) => ({
-        x: xScale(i),
-        y: yScale(item[key]),
-      })),
-      color
-    )
-  }
+  // @autoResetStyle()
+  // protected drawLine(data: number[], color = 'black') {
+  //   const { yScale, context: ctx } = this
+  //   const { xScale } = this.chart
+  //   drawLine(
+  //     ctx,
+  //     data.map((item, i) => ({
+  //       x: xScale(i),
+  //       y: yScale(item),
+  //     })),
+  //     color
+  //   )
+  // }
   topValue = ((lastMaxValue = 0, lastTopValue = Number.MIN_SAFE_INTEGER) => 
     () => {
       const top = this.maxValue * (1.01)

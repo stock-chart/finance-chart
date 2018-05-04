@@ -7,7 +7,7 @@
   "scripts": {
     "clean": "rimraf dist/",
     "dist": "npm run clean && webpack --config ./dev/webpack.config.js",
-    "example": "webpack --config ./dev/webpack.example.js",
+    "example": "rimraf example-dist/ && webpack --config ./dev/webpack.example.js",
     "start": "node ./dev/serve.js",
     "prepublishOnly": "npm run dist && npm run example",
     "pub": "npm publish --access public",

@@ -1,7 +1,6 @@
 import { line } from 'd3-shape';
 import { ScaleLinear } from 'd3-scale';
-import { Point } from '../../dist/paint-utils/index';
-import { Rect } from '../../dist/graphic/primitive';
+import { Point, Rect } from '../graphic/primitive';
 
 export function drawLine(ctx: CanvasRenderingContext2D, data: Point[], color = 'black', lineWidth = 1) {
   ctx.save()
