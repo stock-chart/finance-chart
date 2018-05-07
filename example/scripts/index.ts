@@ -12,7 +12,7 @@ function createTimeShare() {
     selector: '#time-share',
     resolution: (window.devicePixelRatio || 1) >= 2 ? 2 : 1,
     count: 240,
-    data: [],
+    data: MOCK_TIME_SHARE,
     mainDrawer: TimeShareDrawer,
     auxiliaryDrawers: [
       class CustomVolumeDrawer extends VolumeDrawer {

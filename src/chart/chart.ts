@@ -210,11 +210,11 @@ export class Chart {
     if (this.destroyed) {
       throw new Error('Chart has been destroyed, method#setData didn\'t allow to be called')
     }
+    this.data = data
     if (clean) {
       this.destroyDrawer()
       this.createDrawer()
     }
-    this.data = data
     this.mainDrawer && this.mainDrawer.setData(data)
     this.auxiliaryDrawer && this.auxiliaryDrawer.forEach(drawer => drawer.setData(data))
   }
@@ -243,7 +243,6 @@ export class Chart {
     }
   }
   private watchDetail() {
-    console.log('watch detail')
     const { canvas } = this;
     this.detailElement = document.createElement('div')
     this.detailElement.className = 'chart-detail'
