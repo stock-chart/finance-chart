@@ -7,6 +7,7 @@ import { Rect } from "../graphic/primitive";
 import { ChartTitle } from "./chart-title";
 import { drawYAxis, drawXAxis } from "../paint-utils/index";
 import { divide } from "../agorithm/divide";
+import { TITLE_HEIGHT } from '../constants/constants';
 
 const VOLUME_THEME = {
   rise: '#F55559',
@@ -16,9 +17,7 @@ const VOLUME_THEME = {
   title: '#333',
   gridLine: '#E7EAEB'
 }
-const PADDING = {
-  top: 25
-};
+
 
 export interface VolumeData {
   volume: number
@@ -70,7 +69,7 @@ export class VolumeDrawer implements Drawer {
     this.titleDrawer.setLabel(0, volumeLabel(data[data.length - 1].volume))
     this.titleDrawer.draw({
       ...frame,
-      height: PADDING.top * this.chart.options.resolution
+      height: this.titleHeight
     })
     this.drawVolumes()
   }
@@ -81,7 +80,7 @@ export class VolumeDrawer implements Drawer {
     this.resetYScale()
   }
   get titleHeight() {
-    return PADDING.top * this.chart.options.resolution
+    return TITLE_HEIGHT * this.chart.options.resolution
   }
   protected drawXAxis() {
     const tickValues = divide(0, this.chart.options.count, 5)
@@ -135,7 +134,7 @@ export class VolumeDrawer implements Drawer {
     const { frame } = this;
     this.yScale = scaleLinear()
       .domain([0, this.maxValue])
-      .range([frame.y + frame.height, frame.y + (PADDING.top + 15) * this.chart.options.resolution])
+      .range([frame.y + frame.height, frame.y + (TITLE_HEIGHT + 15) * this.chart.options.resolution])
   }
   calcDeltaPrice(currentValue: VolumeData, currentIndex: number, data: VolumeData[]): number {
     if (currentIndex === 0) {

@@ -2,6 +2,7 @@ import 'core-js/modules/es6.object.assign'
 import { line } from 'd3-shape';
 import { ScaleLinear } from 'd3-scale';
 import { Point, Rect } from '../graphic/primitive';
+import { PADDING_LEFT, PADDING_RIGHT } from '../constants/constants';
 
 export function drawLine(ctx: CanvasRenderingContext2D, data: Point[], color = 'black', lineWidth = 1) {
   ctx.save()
@@ -52,16 +53,16 @@ export function drawYAxis(
     ctx.beginPath()
     ctx.lineWidth = 0.8
     ctx.font = `${11 * resolution}px serif`
-    ctx.textAlign = 'right'
+    ctx.textAlign = 'left'
     ctx.textBaseline = 'bottom'
     tickValues.forEach(({value, color = 'black' }, i) => {
       const y = scale(value)
       if (withLine) {
-        ctx.moveTo(0, y)
-        ctx.lineTo(frame.width, y)
+        ctx.moveTo(PADDING_LEFT * resolution, y)
+        ctx.lineTo(frame.width - PADDING_RIGHT * resolution, y)
       }
       ctx.fillStyle = color
-      ctx.fillText(formatter(value, i), 45 * resolution, y)
+      ctx.fillText(formatter(value, i), (PADDING_LEFT + 4) * resolution, y)
     })
     ctx.stroke()
     ctx.restore()

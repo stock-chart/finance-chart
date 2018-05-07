@@ -7,16 +7,19 @@
   width: 130px;
   background: rgb(240, 242, 242);
   top: 30px;
-  // left: 0;
   right: 0;
   display: none;
-  font-size: 14px;
+  font-size: 12px;
 }
 .chart-detail__title {
   text-align: center;
-  padding-bottom: 10px;
+  padding-bottom: 6px;
 }
 .chart-detail__row {
   display: flex;
   justify-content: space-between;
+}
+.chart-detail__row__name, 
+.chart-detail__row__value {
+  display: inline-block;
 }

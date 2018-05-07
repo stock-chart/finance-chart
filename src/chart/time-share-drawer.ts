@@ -9,6 +9,7 @@ import { Rect } from "../graphic/primitive";
 import { ChartTitle } from "./chart-title";
 import { divide } from "../agorithm/divide";
 import { formateDate } from "../agorithm/date";
+import { TITLE_HEIGHT } from '../constants/constants';
 
 const TIME_SHARE_THEME = {
   price: '#4B99FB',
@@ -22,7 +23,6 @@ const TIME_SHARE_THEME = {
 }
 
 const PADDING = {
-  top: 25,
   bottom: 25,
 };
 
@@ -71,7 +71,7 @@ export class TimeShareDrawer implements Drawer {
     this.resetYScale()
   }
   get titleHeight() {
-    return PADDING.top * this.chart.options.resolution
+    return TITLE_HEIGHT * this.chart.options.resolution
   }
   get xAxisTickHeight() {
     return PADDING.bottom * this.chart.options.resolution

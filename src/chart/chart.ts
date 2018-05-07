@@ -1,12 +1,8 @@
 import { ScaleLinear } from "../../node_modules/@types/d3-scale/index"
 import { scaleLinear } from 'd3-scale'
-import { Rect } from "../graphic/primitive";
+import { Rect, Point } from "../graphic/primitive";
 import './chart.scss';
-
-const PADDING = {
-  left: 10,
-  right: 10
-}
+import { TITLE_HEIGHT, PADDING_LEFT, PADDING_RIGHT } from "../constants/constants";
 
 export interface DrawerContructor {
   new (chart: Chart, data: any[]): Drawer
@@ -105,6 +101,9 @@ enum InteractiveState {
   None
 }
 export class Chart {
+  static Theme = {
+    frontSight: '#4B99FB'
+  }
   options: ChartOptions
   requestAnimationFrameId: number = null
   rootElement: HTMLElement
@@ -119,7 +118,7 @@ export class Chart {
   selectedAuxiliaryDrawer = 0
   destroyed = false
   data: any[]
-
+  private detailPoint: Point
   private interactive: InteractiveState = InteractiveState.None
 
   constructor(options: ChartOptions) {
@@ -222,25 +221,48 @@ export class Chart {
     const { resolution, count } = this.options;
     this.xScale = scaleLinear()
       .domain([0, count])
-      .range([PADDING.left * resolution, this.width - PADDING.right * resolution])
+      .range([PADDING_LEFT * resolution, this.width - PADDING_RIGHT * resolution])
   }
   public drawAtEndOfFrame() {
     if (!this.requestAnimationFrameId) {
       this.requestAnimationFrameId = requestAnimationFrame(() => {
         this.context.clearRect(0, 0, this.width, this.height)
-        // if (process.env.NODE_ENV === 'development') {
-        //   console.time('rendering cost');
-        // }
+        if (process.env.NODE_ENV === 'development') {
+          console.time('rendering cost');
+        }
         this.mainDrawer && this.mainDrawer.draw()
         this.auxiliaryDrawer[this.selectedAuxiliaryDrawer] &&
           this.auxiliaryDrawer[this.selectedAuxiliaryDrawer].draw()
         this.requestAnimationFrameId = null
+        if (this.interactive === InteractiveState.ShowDetail) {
+          this.drawFrontSight();
+        }
 
-        // if (process.env.NODE_ENV === 'development') {
-        //   console.timeEnd('rendering cost');
-        // }
+        if (process.env.NODE_ENV === 'development') {
+          console.timeEnd('rendering cost');
+        }
       })
     }
+  }
+  @autoResetStyle()
+  private drawFrontSight() {
+    const { context: ctx } = this
+    const { resolution } = this.options
+    let { x, y } = this.detailPoint
+    const { xScale } = this
+    x = xScale(Math.round(xScale.invert(x)))
+    ctx.beginPath()
+    ctx.moveTo(x, TITLE_HEIGHT * resolution)
+    ctx.lineTo(x, this.height)
+    ctx.moveTo(PADDING_LEFT * resolution, y)
+    ctx.lineTo(this.width - PADDING_RIGHT * resolution, y)
+    ctx.lineWidth = 1
+    ctx.strokeStyle = Chart.Theme.frontSight
+    // not support in ie 10
+    if (typeof ctx.setLineDash === 'function') {
+      ctx.setLineDash([2, 5, 15, 5])
+    }
+    ctx.stroke()
   }
   private watchDetail() {
     const { canvas } = this;
@@ -252,22 +274,36 @@ export class Chart {
     canvas.addEventListener('mouseleave', this.onMouseLeave)
   }
   private onMouseEnter(e: MouseEvent) {
-    this.showDetail(e.clientX - (<HTMLElement>e.target).getBoundingClientRect().left)
+    const rect = (<HTMLElement>e.target).getBoundingClientRect()
+    this.showDetail(
+      e.clientX - rect.left,
+      e.clientY - rect.top
+    )
   }
   private onMouseMove(e: MouseEvent) {
-    this.showDetail(e.clientX - (<HTMLElement>e.target).getBoundingClientRect().left)
+    const rect = (<HTMLElement>e.target).getBoundingClientRect()
+    this.showDetail(
+      e.clientX - rect.left,
+      e.clientY - rect.top
+    )
   }
   private onMouseLeave(e: MouseEvent) {
     const x = e.clientX - (<HTMLElement>e.target).getBoundingClientRect().left,
           y = e.clientY - (<HTMLElement>e.target).getBoundingClientRect().top
     this.hideDetail()
   }
-  private showDetail(x: number) {
+  @shouldRedraw()
+  private showDetail(x: number, y: number) {
     const { data } = this
+    const { resolution } = this.options
+    this.detailPoint = {
+      x: x * resolution,
+      y: y * resolution
+    }
     if (!data || data.length === 0) return
     this.interactive = InteractiveState.ShowDetail
     this.detailElement.style.display = 'block'
-    if (x > this.width / this.options.resolution / 2) {
+    if (this.detailPoint.x > this.width / 2) {
       this.detailElement.style.right = 'auto'
       this.detailElement.style.left = '0'
     } else {
@@ -303,12 +339,12 @@ export class Chart {
     this.detailElement.innerHTML = ''
     this.detailElement.appendChild(fragment)
   }
+  @shouldRedraw()
   private hideDetail() {
     this.interactive = InteractiveState.None
     this.detailElement.style.display = 'none'
   }
   destroy() {
-    // TODO: 移除事件
     this.destroyed = true
     window.removeEventListener('resize', this.resize)
     this.canvas.removeEventListener('mouseenter', this.onMouseEnter)

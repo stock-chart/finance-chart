@@ -9,6 +9,7 @@ import { ChartTitle } from "./chart-title";
 import { divide } from "../agorithm/divide";
 import { formateDate } from "../agorithm/date";
 import { trimNulls } from "../agorithm/arrays";
+import { TITLE_HEIGHT } from '../constants/constants';
 
 const THEME = {
   rise: '#F55559',
@@ -20,7 +21,6 @@ const THEME = {
 }
 
 const PADDING = {
-  top: 25,
   bottom: 25,
 };
 
@@ -87,7 +87,7 @@ export class CandleStickDrawer implements Drawer {
     this.resetYScale()
   }
   get titleHeight() {
-    return PADDING.top * this.chart.options.resolution
+    return TITLE_HEIGHT * this.chart.options.resolution
   }
   get xAxisTickHeight() {
     return PADDING.bottom * this.chart.options.resolution
