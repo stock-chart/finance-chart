@@ -156,6 +156,13 @@ export class Chart {
     window.addEventListener('resize', this.resize)
     this.rootElement.appendChild(this.canvas)
     this.context = this.canvas.getContext('2d')
+    this.createDrawer()
+    if (typeof this.options.detailProvider === 'function') {
+      this.watchDetail()
+    }
+  }
+  private createDrawer() {
+    const { options } = this
     if (options.mainDrawer) {
       this.mainDrawer = new options.mainDrawer(this, this.data)
     }
@@ -163,9 +170,15 @@ export class Chart {
       this.auxiliaryDrawer.push(new drawer(this, this.data))
     })
     this.resize()
-    if (typeof this.options.detailProvider === 'function') {
-      this.watchDetail()
-    }
+  }
+  private destroyDrawer() {
+    // clear referecne to Chart instance
+    this.mainDrawer.chart = null
+    this.auxiliaryDrawer.forEach(drawer => {
+      drawer.chart = null
+    })
+    this.mainDrawer = null
+    this.auxiliaryDrawer = []
   }
   @shouldRedraw()
   public resize() {
@@ -193,9 +206,13 @@ export class Chart {
     })
   }
   @shouldRedraw()
-  public setData(data: any[]) {
+  public setData(data: any[], clean = false) {
     if (this.destroyed) {
       throw new Error('Chart has been destroyed, method#setData didn\'t allow to be called')
+    }
+    if (clean) {
+      this.destroyDrawer()
+      this.createDrawer()
     }
     this.data = data
     this.mainDrawer && this.mainDrawer.setData(data)
@@ -295,18 +312,15 @@ export class Chart {
     // TODO: 移除事件
     this.destroyed = true
     window.removeEventListener('resize', this.resize)
+    this.canvas.removeEventListener('mouseenter', this.onMouseEnter)
+    this.canvas.removeEventListener('mousemove', this.onMouseEnter)
+    this.canvas.removeEventListener('mouseleave', this.onMouseEnter)
     if (this.requestAnimationFrameId) {
       cancelAnimationFrame(this.requestAnimationFrameId)
     }
     this.rootElement.removeChild(this.canvas)
     this.detailElement && this.rootElement.removeChild(this.detailElement)
 
-    // clear referecne to Chart instance
-    this.mainDrawer.chart = null
-    this.auxiliaryDrawer.forEach(drawer => {
-      drawer.chart = null
-    })
-    this.mainDrawer = null
-    this.auxiliaryDrawer = null
+    this.destroyDrawer()
   }
 }

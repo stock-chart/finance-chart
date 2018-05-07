@@ -168,7 +168,7 @@ export class TimeShareDrawer implements Drawer {
       color
     )
   }
-  topValue = ((lastMaxValue = 0, lastTopValue = Number.MIN_VALUE) => 
+  topValue = ((lastTopValue = Number.MIN_VALUE) => 
     () => {
       const top = this.maxValue * (1.01)
       if (top > lastTopValue) {
@@ -177,7 +177,7 @@ export class TimeShareDrawer implements Drawer {
       return lastTopValue
     }
   )()
-  bottomValue = ((lastMinValue = 0, lastBottomValue = Number.MAX_VALUE) => 
+  bottomValue = ((lastBottomValue = Number.MAX_VALUE) => 
     () => {
       const bottom = this.minValue * (0.99)
       if (bottom < lastBottomValue) {
