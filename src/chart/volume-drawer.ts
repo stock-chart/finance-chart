@@ -101,16 +101,18 @@ export class VolumeDrawer implements Drawer {
     this.drawYAxis()
   }
   protected drawYAxis() {
+    const tickValues = uniq(divide(0, this.maxValue)).map(n => ({ value: Math.round(n) }));
     drawYAxis(
       this.context,
-      uniq(divide(this.minValue, this.maxValue)).map(n => ({ value: Math.round(n) })),
+      tickValues,
       this.frame,
       this.yScale,
       this.chart.options.resolution,
       true,
       VOLUME_THEME.gridLine,
       (v, i) => {
-        return v.toString()
+        const str = v.toString()
+        return str.length > 4 ? `${(v / 10000).toFixed(2)}` : str
       }
     )
   }
@@ -121,7 +123,7 @@ export class VolumeDrawer implements Drawer {
     const { context: ctx, yScale } = this
 
     this.data.forEach((d, i) => {
-      ctx.fillStyle = this.calcDeltaPrice(d, i, this.data) >= 0 ? VOLUME_THEME.rise : VOLUME_THEME.fall;
+      ctx.fillStyle = this.calcDeltaPrice(d, i, this.data) > 0 ? VOLUME_THEME.rise : VOLUME_THEME.fall;
       const x = xScale(i),
             y = yScale(d.volume),
             height = frame.height - (y - frame.y),

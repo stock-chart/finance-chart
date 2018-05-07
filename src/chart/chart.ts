@@ -118,7 +118,8 @@ export class Chart {
   auxiliaryDrawer: Drawer[] = []
   selectedAuxiliaryDrawer = 0
   destroyed = false
-  
+  data: any[]
+
   private interactive: InteractiveState = InteractiveState.None
 
   constructor(options: ChartOptions) {
@@ -128,6 +129,7 @@ export class Chart {
     this.onMouseLeave = this.onMouseLeave.bind(this)
 
     this.options = createOptions(options)
+    this.data = this.options.data;
     this.resize = this.resize.bind(this)
   
     this.create()
@@ -155,10 +157,10 @@ export class Chart {
     this.rootElement.appendChild(this.canvas)
     this.context = this.canvas.getContext('2d')
     if (options.mainDrawer) {
-      this.mainDrawer = new options.mainDrawer(this, options.data)
+      this.mainDrawer = new options.mainDrawer(this, this.data)
     }
     options.auxiliaryDrawers.forEach((drawer) => {
-      this.auxiliaryDrawer.push(new drawer(this, options.data))
+      this.auxiliaryDrawer.push(new drawer(this, this.data))
     })
     this.resize()
     if (typeof this.options.detailProvider === 'function') {
@@ -191,17 +193,18 @@ export class Chart {
     })
   }
   @shouldRedraw()
-  public setData(data: any) {
+  public setData(data: any[]) {
     if (this.destroyed) {
       throw new Error('Chart has been destroyed, method#setData didn\'t allow to be called')
     }
+    this.data = data
     this.mainDrawer && this.mainDrawer.setData(data)
     this.auxiliaryDrawer && this.auxiliaryDrawer.forEach(drawer => drawer.setData(data))
   }
   resetXScale() {
-    const { resolution } = this.options;
+    const { resolution, count } = this.options;
     this.xScale = scaleLinear()
-      .domain([0, this.options.count])
+      .domain([0, count])
       .range([PADDING.left * resolution, this.width - PADDING.right * resolution])
   }
   public drawAtEndOfFrame() {
@@ -244,7 +247,7 @@ export class Chart {
     this.hideDetail()
   }
   private showDetail(x: number) {
-    const { data } = this.options
+    const { data } = this
     if (!data || data.length === 0) return
     this.interactive = InteractiveState.ShowDetail
     this.detailElement.style.display = 'block'

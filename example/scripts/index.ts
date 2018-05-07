@@ -1,6 +1,6 @@
 import './index.scss'
 import { TimeShareDrawer } from '../../src/chart/time-share-drawer'
-import { CandleStickDrawer } from '../../src/chart/candle-stick-drawer';
+import { CandleStickDrawer, CandleStickData } from '../../src/chart/candle-stick-drawer';
 import { Chart } from '../../src/chart/chart'
 import { VolumeDrawer, VolumeData } from '../../src/chart/volume-drawer'
 import { formateDate } from '../../src/agorithm/date';
@@ -853,11 +853,12 @@ function createTimeShare() {
     selector: '#time-share',
     resolution: devicePixelRatio >= 2 ? 2 : 1,
     count: 240,
-    data: MOCK_TIME_SHARE,
+    data: [],
     mainDrawer: TimeShareDrawer,
     auxiliaryDrawers: [
       class CustomVolumeDrawer extends VolumeDrawer {
         calcDeltaPrice(currentValue: VolumeData, currentIndex: number, data: VolumeData[]): number {
+          // 第一个项数据应该与昨收价比较
           if (currentIndex === 0) return 0;
           return super.calcDeltaPrice(currentValue, currentIndex, data);
         }
@@ -898,7 +899,7 @@ function createTimeShare() {
     MOCK_TIME_SHARE.push(next)
     timeShareChart.setData(MOCK_TIME_SHARE)
   }
-  // autoUpdateTimeShare()
+  autoUpdateTimeShare()
 }
 
 function createKLine() {
@@ -1526,9 +1527,9 @@ function createKLine() {
     mainDrawer: CandleStickDrawer,
     auxiliaryDrawers: [
       class CustomVolumeDrawer extends VolumeDrawer {
-        calcDeltaPrice(currentValue: VolumeData, currentIndex: number, data: VolumeData[]): number {
-          if (currentIndex === 0) return 0;
-          return super.calcDeltaPrice(currentValue, currentIndex, data);
+        calcDeltaPrice(currentValue: VolumeData, currentIndex: number, data: any[]): number {
+          const { open, close } = data[currentIndex]
+          return close - open
         }
       }
     ],

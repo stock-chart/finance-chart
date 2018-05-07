@@ -88,7 +88,7 @@ export class TimeShareDrawer implements Drawer {
     )
   }
   protected drawXAxis() {
-    let tickValues = uniq(divide(0, this.data.length -1, 5)
+    let tickValues = uniq(divide(0, this.chart.options.count, 5)
       .map(t => Math.floor(t)))
     tickValues.pop()
     drawXAxis(
@@ -101,8 +101,13 @@ export class TimeShareDrawer implements Drawer {
       TIME_SHARE_THEME.gridLine,
       (t, i) => {
         const d = new Date()
-        d.setTime(this.data[i].time * 60 * 1000)
-        return formateDate(d, 'HH:mm')
+        const data = this.data[t]
+        if (data) {
+          d.setTime(data.time * 60 * 1000)
+          return formateDate(d, 'HH:mm')
+        } else {
+          return ''
+        }
       }
     )
   }

@@ -13,7 +13,7 @@ import { trimNulls } from "../agorithm/arrays";
 const THEME = {
   rise: '#F55559',
   fall: '#7DCE8D',
-  same: '#333',
+  same: '#7DCE8D',
   titleBackground: '#F2F4F4',
   title: '#333',
   gridLine: '#E7EAEB'
@@ -108,12 +108,11 @@ export class CandleStickDrawer implements Drawer {
   }
   protected drawXAxis() {
     // TODO: optimize ticks
-    let tickValues = uniq(divide(0, this.data.length -1, 5)
+    let tickValues = uniq(divide(0, this.chart.options.count, 5)
       .map(t => Math.floor(t)))
     if (this.chart.options.count - this.data.length <= 8) {
       tickValues.pop()
     }
-    // const tickValues = [0]
     drawXAxis(
       this.context,
       tickValues,
@@ -123,8 +122,11 @@ export class CandleStickDrawer implements Drawer {
       true,
       THEME.gridLine,
       (t: number) => {
-        const d = this.data[t].time
-        return formateDate(d, 'yyyy/MM/dd')
+        const d = this.data[t]
+        if (d) {
+          return formateDate(d.time, 'yyyy/MM/dd')
+        }
+        return ''
       }
     )
   }

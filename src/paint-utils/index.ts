@@ -60,7 +60,7 @@ export function drawYAxis(
         ctx.lineTo(frame.width, y)
       }
       ctx.fillStyle = color
-      ctx.fillText(formatter(value, i), 40 * resolution, y)
+      ctx.fillText(formatter(value, i), 45 * resolution, y)
     })
     ctx.stroke()
     ctx.restore()
