@@ -1,5 +1,5 @@
 import uniq from 'lodash.uniq'
-import { Chart, autoResetStyle, Drawer } from "./chart"
+import { Chart, autoResetStyle, Drawer, FrontSightDetail } from "./chart"
 import { ScaleLinear } from "../../node_modules/@types/d3-scale/index"
 import { area } from 'd3-shape'
 import { scaleLinear } from 'd3-scale'
@@ -10,6 +10,7 @@ import { divide } from "../agorithm/divide";
 import { formateDate } from "../agorithm/date";
 import { trimNulls } from "../agorithm/arrays";
 import { TITLE_HEIGHT } from '../constants/constants';
+import { Point } from '../../dist/graphic/primitive';
 
 const THEME = {
   rise: '#F55559',
@@ -54,7 +55,7 @@ export class CandleStickDrawer implements Drawer {
     this.titleDrawer = new ChartTitle(
       this.context,
       'MA', this.MAIndicators.map(({key, color}, i) => ({
-        x: ++i * 85 * chart.options.resolution,
+        x: i * 45 * chart.options.resolution + 30 * chart.options.resolution,
         label: `${key.toUpperCase()}: 0`,
         color
       })),
@@ -85,6 +86,29 @@ export class CandleStickDrawer implements Drawer {
     this.minValue = minV
     this.maxValue = maxV
     this.resetYScale()
+  }
+  public detailProvider(point: Point, selectedIndex: number): FrontSightDetail {
+    this.updateTitle(selectedIndex)
+    return {
+      left: '',
+      right: ''
+    }
+  }
+  private redrawTitle() {
+    const { context: ctx, frame } = this
+    ctx.clearRect(0, frame.y, frame.width, this.titleHeight)
+    this.titleDrawer.draw({
+      ...this.frame,
+      height: this.titleHeight
+    })
+  }
+  private updateTitle(i: number) {
+    const d = this.data[i]
+    this.MAIndicators.forEach(({ key }, i) => {
+      const m = ((d[key] as number) || 0).toFixed(2)
+      this.titleDrawer.setLabel(i, `${key.toUpperCase()}: ${m}`)
+    })
+    this.redrawTitle()
   }
   get titleHeight() {
     return TITLE_HEIGHT * this.chart.options.resolution
@@ -144,13 +168,11 @@ export class CandleStickDrawer implements Drawer {
     this.resetYScale()
   }
   public draw(){
-    if (this.data && this.data.length > 0){
+    const { data } = this
+    if (data && data.length > 0){
       const { frame } = this;
+      this.updateTitle(data.length - 1)
       this.drawAxes();
-      this.titleDrawer.draw({
-        ...frame,
-        height: this.titleHeight
-      })
       this.drawCandles()
       this.drawMA()
     }

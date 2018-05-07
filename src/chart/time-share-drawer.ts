@@ -1,11 +1,11 @@
 import uniq from 'lodash.uniq'
-import { Chart, autoResetStyle, Drawer } from "./chart"
+import { Chart, autoResetStyle, Drawer, FrontSightDetail } from "./chart"
 import { ScaleLinear } from "../../node_modules/@types/d3-scale/index"
 import { area } from 'd3-shape'
 import { min, max } from 'd3-array';
 import { scaleLinear } from 'd3-scale'
 import { drawLine, drawYAxis, drawXAxis } from "../paint-utils/index";
-import { Rect } from "../graphic/primitive";
+import { Rect, Point } from "../graphic/primitive";
 import { ChartTitle } from "./chart-title";
 import { divide } from "../agorithm/divide";
 import { formateDate } from "../agorithm/date";
@@ -47,12 +47,12 @@ export class TimeShareDrawer implements Drawer {
       this.context,
       null, [
         {
-          x: 0,
+          x: 5 * this.chart.options.resolution,
           label: '分时走势',
           color: TIME_SHARE_THEME.price
         },
         {
-          x: 50,
+          x: 50 + 5 * this.chart.options.resolution,
           label: '均线',
           color: TIME_SHARE_THEME.avg
         }
@@ -70,10 +70,29 @@ export class TimeShareDrawer implements Drawer {
     this.maxValue = max(merge)
     this.resetYScale()
   }
-  get titleHeight() {
+  @autoResetStyle()
+  public detailProvider(point: Point, selectedIndex: number): FrontSightDetail {
+    const { context: ctx, yScale, data } = this
+    const { xScale } = this.chart
+    const x = xScale(selectedIndex)
+    const size = 5 * this.chart.options.resolution
+    ctx.beginPath()
+    ctx.arc(x, yScale(data[selectedIndex].price), size, 0, Math.PI * 2)
+    ctx.fillStyle = TIME_SHARE_THEME.price
+    ctx.fill()
+    ctx.beginPath()
+    ctx.arc(x, yScale(data[selectedIndex].avg), size, 0, Math.PI * 2)
+    ctx.fillStyle = TIME_SHARE_THEME.avg
+    ctx.fill()
+    return {
+      left: '',
+      right: ''
+    }
+  }
+  private get titleHeight() {
     return TITLE_HEIGHT * this.chart.options.resolution
   }
-  get xAxisTickHeight() {
+  private get xAxisTickHeight() {
     return PADDING.bottom * this.chart.options.resolution
   }
   protected drawYAxis() {

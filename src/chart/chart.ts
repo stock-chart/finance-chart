@@ -1,11 +1,17 @@
-import { ScaleLinear } from "../../node_modules/@types/d3-scale/index"
+import clamp from 'lodash.clamp';
+import { ScaleLinear } from '../../node_modules/@types/d3-scale/index'
 import { scaleLinear } from 'd3-scale'
-import { Rect, Point } from "../graphic/primitive";
+import { Rect, Point } from '../graphic/primitive';
 import './chart.scss';
-import { TITLE_HEIGHT, PADDING_LEFT, PADDING_RIGHT } from "../constants/constants";
+import { TITLE_HEIGHT, PADDING_LEFT, PADDING_RIGHT } from '../constants/constants';
 
 export interface DrawerContructor {
   new (chart: Chart, data: any[]): Drawer
+}
+
+export interface FrontSightDetail {
+  left: string;
+  right: string;
 }
 
 export interface Drawer {
@@ -15,6 +21,7 @@ export interface Drawer {
   draw(): void
   resize(frame: Rect): void
   setData(data: Object[]): void
+  detailProvider(point: Point, selectedIndex: number) : FrontSightDetail
 }
 
 export interface ChartOptions {
@@ -227,9 +234,9 @@ export class Chart {
     if (!this.requestAnimationFrameId) {
       this.requestAnimationFrameId = requestAnimationFrame(() => {
         this.context.clearRect(0, 0, this.width, this.height)
-        if (process.env.NODE_ENV === 'development') {
-          console.time('rendering cost');
-        }
+        // if (process.env.NODE_ENV === 'development') {
+        //   console.time('rendering cost');
+        // }
         this.mainDrawer && this.mainDrawer.draw()
         this.auxiliaryDrawer[this.selectedAuxiliaryDrawer] &&
           this.auxiliaryDrawer[this.selectedAuxiliaryDrawer].draw()
@@ -238,9 +245,9 @@ export class Chart {
           this.drawFrontSight();
         }
 
-        if (process.env.NODE_ENV === 'development') {
-          console.timeEnd('rendering cost');
-        }
+        // if (process.env.NODE_ENV === 'development') {
+        //   console.timeEnd('rendering cost');
+        // }
       })
     }
   }
@@ -250,7 +257,8 @@ export class Chart {
     const { resolution } = this.options
     let { x, y } = this.detailPoint
     const { xScale } = this
-    x = xScale(Math.round(xScale.invert(x)))
+    const selectedIndex = clamp(Math.round(xScale.invert(x)), 0, this.data.length - 1)
+    x = xScale(selectedIndex)
     ctx.beginPath()
     ctx.moveTo(x, TITLE_HEIGHT * resolution)
     ctx.lineTo(x, this.height)
@@ -263,6 +271,10 @@ export class Chart {
       ctx.setLineDash([2, 5, 15, 5])
     }
     ctx.stroke()
+
+    this.mainDrawer.detailProvider(this.detailPoint, selectedIndex)
+    this.auxiliaryDrawer[this.selectedAuxiliaryDrawer]
+      .detailProvider(this.detailPoint, selectedIndex)
   }
   private watchDetail() {
     const { canvas } = this;
@@ -301,6 +313,10 @@ export class Chart {
       y: y * resolution
     }
     if (!data || data.length === 0) return
+    if (y < TITLE_HEIGHT) {
+      this.hideDetail()
+      return
+    }
     this.interactive = InteractiveState.ShowDetail
     this.detailElement.style.display = 'block'
     if (this.detailPoint.x > this.width / 2) {

@@ -1,9 +1,9 @@
 import uniq from 'lodash.uniq'
-import { Drawer, Chart, autoResetStyle } from "./chart";
+import { Drawer, Chart, autoResetStyle, FrontSightDetail } from "./chart";
 import { ScaleLinear } from "../../node_modules/@types/d3-scale/index";
 import { scaleLinear } from 'd3-scale';
 import { max, min } from 'd3-array';
-import { Rect } from "../graphic/primitive";
+import { Rect, Point } from "../graphic/primitive";
 import { ChartTitle } from "./chart-title";
 import { drawYAxis, drawXAxis } from "../paint-utils/index";
 import { divide } from "../agorithm/divide";
@@ -66,11 +66,7 @@ export class VolumeDrawer implements Drawer {
     const { frame, data } = this
     if (data.length === 0 ) return
     this.drawAxes()
-    this.titleDrawer.setLabel(0, volumeLabel(data[data.length - 1].volume))
-    this.titleDrawer.draw({
-      ...frame,
-      height: this.titleHeight
-    })
+    this.updateTitle(data.length - 1)
     this.drawVolumes()
   }
   public setData(data: VolumeData[]) {
@@ -78,6 +74,25 @@ export class VolumeDrawer implements Drawer {
     this.minValue = min(data, d => d.volume)
     this.maxValue = max(data, d => d.volume)
     this.resetYScale()
+  }
+  public detailProvider(point: Point, selectedIndex: number): FrontSightDetail {
+    this.updateTitle(selectedIndex)
+    return {
+      left: '',
+      right: ''
+    }
+  }
+  private updateTitle(i: number) {
+    this.titleDrawer.setLabel(0, volumeLabel(this.data[i].volume))
+    this.redrawTitle()
+  }
+  private redrawTitle() {
+    const { context: ctx, frame } = this
+    ctx.clearRect(0, frame.y, frame.width, this.titleHeight)
+    this.titleDrawer.draw({
+      ...this.frame,
+      height: this.titleHeight
+    })
   }
   get titleHeight() {
     return TITLE_HEIGHT * this.chart.options.resolution
@@ -101,6 +116,8 @@ export class VolumeDrawer implements Drawer {
   }
   protected drawYAxis() {
     const tickValues = uniq(divide(0, this.maxValue)).map(n => ({ value: Math.round(n) }));
+    const maxTickValue = parseInt(max(tickValues, d => d.value).toString(), 10).toString()
+    const useWUnit = maxTickValue.length > 4
     drawYAxis(
       this.context,
       tickValues,
@@ -110,8 +127,13 @@ export class VolumeDrawer implements Drawer {
       true,
       VOLUME_THEME.gridLine,
       (v, i) => {
-        const str = v.toString()
-        return str.length > 4 ? `${(v / 10000).toFixed(2)}` : str
+        if (i === 0) {
+          if (useWUnit) {
+            return '万手'
+          }
+          return '手'
+        }
+        return useWUnit ? `${(v / 10000).toFixed(2)}` : v.toFixed(0)
       }
     )
   }

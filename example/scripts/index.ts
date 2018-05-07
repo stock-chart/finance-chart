@@ -79,7 +79,7 @@ function createKLine() {
   const klineChart = new Chart({
     selector: '#candle-stick',
     resolution: (window.devicePixelRatio || 1) >= 2 ? 2 : 1,
-    count: 80,
+    count: 60,
     data: MOCK_KLINE,
     mainDrawer: CandleStickDrawer,
     auxiliaryDrawers: [
