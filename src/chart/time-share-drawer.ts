@@ -1,3 +1,4 @@
+import uniq from 'lodash.uniq'
 import { Chart, autoResetStyle, Drawer } from "./chart"
 import { ScaleLinear } from "../../node_modules/@types/d3-scale/index"
 import { area } from 'd3-shape'
@@ -87,7 +88,8 @@ export class TimeShareDrawer implements Drawer {
     )
   }
   protected drawXAxis() {
-    const tickValues = divide(0, this.chart.options.count, 5)
+    let tickValues = uniq(divide(0, this.data.length -1, 5)
+      .map(t => Math.floor(t)))
     tickValues.pop()
     drawXAxis(
       this.context,
@@ -97,9 +99,9 @@ export class TimeShareDrawer implements Drawer {
       this.chart.options.resolution,
       true,
       TIME_SHARE_THEME.gridLine,
-      t => {
+      (t, i) => {
         const d = new Date()
-        d.setTime(t * 60 * 1000)
+        d.setTime(this.data[i].time * 60 * 1000)
         return formateDate(d, 'HH:mm')
       }
     )
@@ -118,13 +120,15 @@ export class TimeShareDrawer implements Drawer {
     this.resetYScale()
   }
   public draw(){
-    const { frame } = this;
-    this.drawAxes();
-    this.titleDrawer.draw({
-      ...frame,
-      height: this.titleHeight
-    })
-    this.drawTimeShare()
+    if (this.data && this.data.length > 0) {
+      const { frame } = this;
+      this.drawAxes();
+      this.titleDrawer.draw({
+        ...frame,
+        height: this.titleHeight
+      })
+      this.drawTimeShare()
+    }
   }
   @autoResetStyle()
   protected drawTimeShare() {

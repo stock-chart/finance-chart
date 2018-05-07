@@ -1,0 +1,22 @@
+.finance-chart {
+  position: relative;
+}
+.chart-detail {
+  position: absolute;
+  padding: 8px;
+  width: 130px;
+  background: rgb(240, 242, 242);
+  top: 30px;
+  // left: 0;
+  right: 0;
+  display: none;
+  font-size: 14px;
+}
+.chart-detail__title {
+  text-align: center;
+  padding-bottom: 10px;
+}
+.chart-detail__row {
+  display: flex;
+  justify-content: space-between;
+}

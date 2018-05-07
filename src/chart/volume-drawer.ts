@@ -1,3 +1,4 @@
+import uniq from 'lodash.uniq'
 import { Drawer, Chart, autoResetStyle } from "./chart";
 import { ScaleLinear } from "../../node_modules/@types/d3-scale/index";
 import { scaleLinear } from 'd3-scale';
@@ -102,14 +103,13 @@ export class VolumeDrawer implements Drawer {
   protected drawYAxis() {
     drawYAxis(
       this.context,
-      divide(this.minValue, this.maxValue).map(n => ({ value: Math.round(n) })),
+      uniq(divide(this.minValue, this.maxValue)).map(n => ({ value: Math.round(n) })),
       this.frame,
       this.yScale,
       this.chart.options.resolution,
       true,
       VOLUME_THEME.gridLine,
       (v, i) => {
-        if (i === 0) return '手'
         return v.toString()
       }
     )

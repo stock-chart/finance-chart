@@ -3,6 +3,7 @@ import { TimeShareDrawer } from '../../src/chart/time-share-drawer'
 import { CandleStickDrawer } from '../../src/chart/candle-stick-drawer';
 import { Chart } from '../../src/chart/chart'
 import { VolumeDrawer, VolumeData } from '../../src/chart/volume-drawer'
+import { formateDate } from '../../src/agorithm/date';
 
 function createTimeShare() {
   const MOCK_TIME_SHARE = [
@@ -861,7 +862,26 @@ function createTimeShare() {
           return super.calcDeltaPrice(currentValue, currentIndex, data);
         }
       }
-    ]
+    ],
+    detailProvider: (i, data) => {
+      const date = new Date()
+      date.setTime(data[i].time * 60 * 1000)
+      return {
+        title: formateDate(date, 'HH:mm'),
+        tables: [
+          {
+            color: 'green',
+            name: '开盘',
+            value: '10353'
+          },
+          {
+            color: '#333',
+            name: '开盘',
+            value: '10353'
+          }
+        ]
+      }
+    }
   })
   function autoUpdateTimeShare() {
     if (MOCK_TIME_SHARE.length < 240) {
@@ -878,7 +898,7 @@ function createTimeShare() {
     MOCK_TIME_SHARE.push(next)
     timeShareChart.setData(MOCK_TIME_SHARE)
   }
-  autoUpdateTimeShare()
+  // autoUpdateTimeShare()
 }
 
 function createKLine() {
@@ -1511,7 +1531,34 @@ function createKLine() {
           return super.calcDeltaPrice(currentValue, currentIndex, data);
         }
       }
-    ]
+    ],
+    detailProvider: (i, data) => {
+      const WEEK_DAY_MAP: { [index: number]: string} = {
+        0: '周日',
+        1: '周一',
+        2: '周二',
+        3: '周三',
+        4: '周四',
+        5: '周五',
+        6: '周六'
+      }
+      const date = new Date(data[i].time.replace(/-/g, '/'))
+      return {
+        title: `${formateDate(date, 'yyyy/MM/dd')} ${WEEK_DAY_MAP[date.getDay()]}`,
+        tables: [
+          {
+            color: 'green',
+            name: '开盘',
+            value: '10353'
+          },
+          {
+            color: '#333',
+            name: '开盘',
+            value: '10353'
+          }
+        ]
+      }
+    }
   })
 }
 createTimeShare()

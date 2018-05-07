@@ -1,6 +1,6 @@
 {
   "name": "@dz-web/finance-chart",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "finance chart for dz-web",
   "main": "index.js",
   "types": "./dist/index.d.ts",
@@ -62,7 +62,8 @@
     "@types/d3-shape": "^1.2.2",
     "d3-array": "^1.2.1",
     "d3-scale": "^2.0.0",
-    "d3-shape": "^1.2.0"
+    "d3-shape": "^1.2.0",
+    "lodash.uniq": "^4.5.0"
   },
   "jest": {
     "transform": {

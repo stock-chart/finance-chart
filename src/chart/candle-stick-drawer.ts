@@ -1,8 +1,9 @@
+import uniq from 'lodash.uniq'
 import { Chart, autoResetStyle, Drawer } from "./chart"
 import { ScaleLinear } from "../../node_modules/@types/d3-scale/index"
 import { area } from 'd3-shape'
 import { scaleLinear } from 'd3-scale'
-import { drawLine, drawYAxis, drawXAxis } from "../paint-utils/index";
+import { drawLine, drawYAxis, drawXAxis } from '../paint-utils/index'
 import { Rect } from "../graphic/primitive";
 import { ChartTitle } from "./chart-title";
 import { divide } from "../agorithm/divide";
@@ -47,7 +48,7 @@ export class CandleStickDrawer implements Drawer {
   titleDrawer: ChartTitle
   minValue = 0
   maxValue = 0
-  private data: CandleStickData[]
+  private data: CandleStickData[] = []
   constructor(public chart: Chart, data: CandleStickData[] = []) {
     this.context = chart.context
     this.titleDrawer = new ChartTitle(
@@ -106,8 +107,13 @@ export class CandleStickDrawer implements Drawer {
     )
   }
   protected drawXAxis() {
-    const tickValues = divide(0, this.chart.options.count, 5)
-    tickValues.pop()
+    // TODO: optimize ticks
+    let tickValues = uniq(divide(0, this.data.length -1, 5)
+      .map(t => Math.floor(t)))
+    if (this.chart.options.count - this.data.length <= 8) {
+      tickValues.pop()
+    }
+    // const tickValues = [0]
     drawXAxis(
       this.context,
       tickValues,
@@ -116,8 +122,8 @@ export class CandleStickDrawer implements Drawer {
       this.chart.options.resolution,
       true,
       THEME.gridLine,
-      (t, i) => {
-        const d = new Date(this.data[i].time)
+      (t: number) => {
+        const d = this.data[t].time
         return formateDate(d, 'yyyy/MM/dd')
       }
     )
@@ -136,14 +142,16 @@ export class CandleStickDrawer implements Drawer {
     this.resetYScale()
   }
   public draw(){
-    const { frame } = this;
-    this.drawAxes();
-    this.titleDrawer.draw({
-      ...frame,
-      height: this.titleHeight
-    })
-    this.drawCandles()
-    this.drawMA()
+    if (this.data && this.data.length > 0){
+      const { frame } = this;
+      this.drawAxes();
+      this.titleDrawer.draw({
+        ...frame,
+        height: this.titleHeight
+      })
+      this.drawCandles()
+      this.drawMA()
+    }
   }
   protected drawMA() {
     const { data, yScale } = this
