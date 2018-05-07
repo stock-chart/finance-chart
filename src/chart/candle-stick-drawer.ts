@@ -10,7 +10,7 @@ import { divide } from "../agorithm/divide";
 import { formateDate } from "../agorithm/date";
 import { trimNulls } from "../agorithm/arrays";
 import { TITLE_HEIGHT } from '../constants/constants';
-import { Point } from '../../dist/graphic/primitive';
+import { Point } from '../graphic/primitive';
 
 const THEME = {
   rise: '#F55559',
