@@ -68,8 +68,8 @@ export class CandleStickDrawer implements Drawer {
     this.data = data;
     const keys = this.MAIndicators.map(d => d.key)
     keys.push('low', 'high')
-    let minV = Number.MAX_SAFE_INTEGER
-    let maxV = Number.MIN_SAFE_INTEGER
+    let minV = Number.MAX_VALUE
+    let maxV = Number.MIN_VALUE
     for (let i = 0, lenI = data.length; i < lenI; ++i) {
       keys.forEach((key) => {
         const v = data[i][key] as number
@@ -197,7 +197,7 @@ export class CandleStickDrawer implements Drawer {
       ctx.fillRect(x + width / 2, yScale(minV), 1, yScale(d.low) - yScale(minV))
     })
   }
-  topValue = ((lastMaxValue = 0, lastTopValue = Number.MIN_SAFE_INTEGER) => 
+  topValue = ((lastMaxValue = 0, lastTopValue = Number.MIN_VALUE) => 
     () => {
       const top = this.maxValue * (1.01)
       if (top > lastTopValue) {
@@ -206,7 +206,7 @@ export class CandleStickDrawer implements Drawer {
       return lastTopValue
     }
   )()
-  bottomValue = ((lastMinValue = 0, lastBottomValue = Number.MAX_SAFE_INTEGER) => 
+  bottomValue = ((lastMinValue = 0, lastBottomValue = Number.MAX_VALUE) => 
     () => {
       const bottom = this.minValue * (0.99)
       if (bottom < lastBottomValue) {

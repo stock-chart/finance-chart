@@ -151,7 +151,7 @@ export class Chart {
     this.rootElement = (options.selector instanceof HTMLElement)
         ? options.selector as HTMLElement
         : document.querySelector(options.selector as string)
-    this.rootElement.classList.add('finance-chart')
+    this.rootElement.className = 'finance-chart'
     this.canvas = document.createElement('canvas')
     window.addEventListener('resize', this.resize)
     this.rootElement.appendChild(this.canvas)
@@ -229,7 +229,7 @@ export class Chart {
     console.log('watch detail')
     const { canvas } = this;
     this.detailElement = document.createElement('div')
-    this.detailElement.classList.add('chart-detail');
+    this.detailElement.className = 'chart-detail'
     this.rootElement.appendChild(this.detailElement)
     canvas.addEventListener('mouseenter', this.onMouseEnter)
     canvas.addEventListener('mousemove', this.onMouseMove)
@@ -252,10 +252,10 @@ export class Chart {
     this.interactive = InteractiveState.ShowDetail
     this.detailElement.style.display = 'block'
     if (x > this.width / this.options.resolution / 2) {
-      this.detailElement.style.right = 'unset'
+      this.detailElement.style.right = 'auto'
       this.detailElement.style.left = '0'
     } else {
-      this.detailElement.style.left = 'unset'
+      this.detailElement.style.left = 'auto'
       this.detailElement.style.right = '0'
     }
     const xScale = this.xScale.clamp(true)
@@ -267,17 +267,17 @@ export class Chart {
     const { title, tables } = this.options.detailProvider(detailIndex, data)
     const fragment = document.createDocumentFragment()
     const $title = document.createElement('div')
-    $title.classList.add('chart-detail__title')
+    $title.className = 'chart-detail__title'
     $title.textContent = title
     fragment.appendChild($title)
     tables.forEach(row => {
       const $row = document.createElement('div'),
         $name = document.createElement('span'),
-        $value = document.createElement('span');
-      $row.classList.add('chart-detail__row')
-      $name.classList.add('chart-detail__row__name')
+        $value = document.createElement('span')
+      $row.className = 'chart-detail__row'
+      $name.className = 'chart-detail__row__name'
       $name.textContent = row.name
-      $value.classList.add('chart-detail__row__value')
+      $value.className = 'chart-detail__row__value'
       $value.textContent = row.value
       $value.style.color = row.color || 'black'
       $row.appendChild($name)

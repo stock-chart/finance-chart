@@ -1,3 +1,4 @@
+import 'core-js/modules/es6.object.assign'
 import { line } from 'd3-shape';
 import { ScaleLinear } from 'd3-scale';
 import { Point, Rect } from '../graphic/primitive';

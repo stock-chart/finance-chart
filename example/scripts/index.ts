@@ -851,7 +851,7 @@ function createTimeShare() {
 
   const timeShareChart = new Chart({
     selector: '#time-share',
-    resolution: devicePixelRatio >= 2 ? 2 : 1,
+    resolution: (window.devicePixelRatio || 1) >= 2 ? 2 : 1,
     count: 240,
     data: [],
     mainDrawer: TimeShareDrawer,
@@ -1521,7 +1521,7 @@ function createKLine() {
   ]
   const klineChart = new Chart({
     selector: '#candle-stick',
-    resolution: devicePixelRatio >= 2 ? 2 : 1,
+    resolution: (window.devicePixelRatio || 1) >= 2 ? 2 : 1,
     count: 80,
     data: MOCK_KLINE,
     mainDrawer: CandleStickDrawer,

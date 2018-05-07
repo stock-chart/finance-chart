@@ -1,6 +1,6 @@
 {
   "name": "@dz-web/finance-chart",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "finance chart for dz-web",
   "main": "index.js",
   "types": "./dist/index.d.ts",
@@ -21,11 +21,11 @@
     "url": ""
   },
   "author": "yeluoqiuzhi",
-  "license": "MIT",
+  "license": "LGPL",
   "bugs": {
-    "url": ""
+    "url": "https://github.com/dz-web/finance-chart/issues"
   },
-  "homepage": "",
+  "homepage": "https://github.com/dz-web/finance-chart",
   "devDependencies": {
     "@types/jest": "^22.2.3",
     "autoprefixer": "^8.2.0",
@@ -60,6 +60,7 @@
     "@types/d3-array": "^1.2.1",
     "@types/d3-scale": "^2.0.0",
     "@types/d3-shape": "^1.2.2",
+    "core-js": "^2.5.5",
     "d3-array": "^1.2.1",
     "d3-scale": "^2.0.0",
     "d3-shape": "^1.2.0",
