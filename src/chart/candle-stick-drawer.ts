@@ -55,7 +55,7 @@ export class CandleStickDrawer implements Drawer {
     this.titleDrawer = new ChartTitle(
       this.context,
       'MA', this.MAIndicators.map(({key, color}, i) => ({
-        x: i * 45 * chart.options.resolution + 30 * chart.options.resolution,
+        x: i * 80 + 40,
         label: `${key.toUpperCase()}: 0`,
         color
       })),

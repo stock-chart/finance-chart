@@ -23,7 +23,7 @@ export class ChartTitle {
     ctx.fillRect(frame.x, frame.y, frame.width, frame.height)
     if (title) {
       drawText(ctx, title, {
-        x: 5 * this.resolution,
+        x: 5 * resolution,
         y: frame.y + 5 * resolution
       }, {
         font: `${11 * resolution}px serif`,

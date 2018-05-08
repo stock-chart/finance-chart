@@ -28,6 +28,8 @@ const volumeLabel = (v: number) => `VOL: ${v.toFixed(2)}`
  * Volume chart drawer
  */
 export class VolumeDrawer implements Drawer {
+  static proportion = 100
+  static unit = '手'
   context: CanvasRenderingContext2D
   yScale: ScaleLinear<number, number>
   frame: Rect = { x: 0, y: 0, width: 0, height: 0}
@@ -115,8 +117,11 @@ export class VolumeDrawer implements Drawer {
     this.drawYAxis()
   }
   protected drawYAxis() {
-    const tickValues = uniq(divide(0, this.maxValue)).map(n => ({ value: Math.round(n) }));
-    const maxTickValue = parseInt(max(tickValues, d => d.value).toString(), 10).toString()
+    const tickValues = uniq(divide(0, this.maxValue, 4)).map(n => ({ value: Math.round(n) }));
+    const maxTickValue = parseInt(
+      (max(tickValues, d => d.value) / VolumeDrawer.proportion).toString(),
+      10
+    ).toString()
     const useWUnit = maxTickValue.length > 4
     drawYAxis(
       this.context,
@@ -127,13 +132,14 @@ export class VolumeDrawer implements Drawer {
       true,
       VOLUME_THEME.gridLine,
       (v, i) => {
+        const scaledV = v / VolumeDrawer.proportion
         if (i === 0) {
           if (useWUnit) {
-            return '万手'
+            return `万${VolumeDrawer.unit}`
           }
-          return '手'
+          return VolumeDrawer.unit
         }
-        return useWUnit ? `${(v / 10000).toFixed(2)}` : v.toFixed(0)
+        return useWUnit ? `${(scaledV / 10000 ).toFixed(2)}` : scaledV.toFixed(0)
       }
     )
   }

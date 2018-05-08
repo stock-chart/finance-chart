@@ -7,6 +7,9 @@ import { formateDate } from '../../src/algorithm/date';
 import MOCK_TIME_SHARE from './mock-time-share';
 import MOCK_KLINE from './mock-kline';
 
+VolumeDrawer.proportion = 100
+VolumeDrawer.unit = '手'
+
 function createTimeShare() {
   const timeShareChart = new Chart({
     selector: '#time-share',
