@@ -6,7 +6,7 @@ import { max, min } from 'd3-array';
 import { Rect, Point } from "../graphic/primitive";
 import { ChartTitle } from "./chart-title";
 import { drawYAxis, drawXAxis } from "../paint-utils/index";
-import { divide } from "../agorithm/divide";
+import { divide } from "../algorithm/divide";
 import { TITLE_HEIGHT } from '../constants/constants';
 
 const VOLUME_THEME = {

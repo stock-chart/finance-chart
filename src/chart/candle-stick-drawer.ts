@@ -6,9 +6,9 @@ import { scaleLinear } from 'd3-scale'
 import { drawLine, drawYAxis, drawXAxis } from '../paint-utils/index'
 import { Rect } from "../graphic/primitive";
 import { ChartTitle } from "./chart-title";
-import { divide } from "../agorithm/divide";
-import { formateDate } from "../agorithm/date";
-import { trimNulls } from "../agorithm/arrays";
+import { divide } from "../algorithm/divide";
+import { formateDate } from "../algorithm/date";
+import { trimNulls } from "../algorithm/arrays";
 import { TITLE_HEIGHT } from '../constants/constants';
 import { Point } from '../graphic/primitive';
 

@@ -3,7 +3,7 @@ import { TimeShareDrawer } from '../../src/chart/time-share-drawer'
 import { CandleStickDrawer, CandleStickData } from '../../src/chart/candle-stick-drawer';
 import { Chart } from '../../src/chart/chart'
 import { VolumeDrawer, VolumeData } from '../../src/chart/volume-drawer'
-import { formateDate } from '../../src/agorithm/date';
+import { formateDate } from '../../src/algorithm/date';
 import MOCK_TIME_SHARE from './mock-time-share';
 import MOCK_KLINE from './mock-kline';
 

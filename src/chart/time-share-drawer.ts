@@ -7,8 +7,8 @@ import { scaleLinear } from 'd3-scale'
 import { drawLine, drawYAxis, drawXAxis } from "../paint-utils/index";
 import { Rect, Point } from "../graphic/primitive";
 import { ChartTitle } from "./chart-title";
-import { divide } from "../agorithm/divide";
-import { formateDate } from "../agorithm/date";
+import { divide } from "../algorithm/divide";
+import { formateDate } from "../algorithm/date";
 import { TITLE_HEIGHT } from '../constants/constants';
 
 const TIME_SHARE_THEME = {
