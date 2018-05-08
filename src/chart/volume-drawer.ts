@@ -23,7 +23,13 @@ export interface VolumeData {
   volume: number
 }
 
-const volumeLabel = (v: number) => `VOL: ${v.toFixed(2)}`
+const volumeLabel = (v: number) => {
+  const scaleV = v / VolumeDrawer.proportion
+  if (scaleV > 10000) {
+    return `VOL: ${(scaleV / 10000).toFixed(2)}万`
+  }
+  return `VOL: ${scaleV.toFixed(2)}`
+}
 /**
  * Volume chart drawer
  */
@@ -64,7 +70,7 @@ export class VolumeDrawer implements Drawer {
     }
     this.resetYScale()
   }
-  public draw(): void {
+  public draw() {
     const { frame, data } = this
     if (data.length === 0 ) return
     this.drawAxes()
@@ -118,11 +124,9 @@ export class VolumeDrawer implements Drawer {
   }
   protected drawYAxis() {
     const tickValues = uniq(divide(0, this.maxValue, 4)).map(n => ({ value: Math.round(n) }));
-    const maxTickValue = parseInt(
-      (max(tickValues, d => d.value) / VolumeDrawer.proportion).toString(),
-      10
-    ).toString()
-    const useWUnit = maxTickValue.length > 4
+    const maxTickValue =
+      max(tickValues, d => d.value) / VolumeDrawer.proportion
+    const useWUnit = maxTickValue > 10000
     drawYAxis(
       this.context,
       tickValues,
