@@ -17,7 +17,7 @@ const THEME = {
   fall: '#7DCE8D',
   same: '#7DCE8D',
   titleBackground: '#F2F4F4',
-  title: '#333',
+  title: '#5E667F',
   gridLine: '#E7EAEB'
 }
 

@@ -18,24 +18,24 @@ export class ChartTitle {
   }
   @autoResetStyle()
   draw(frame: Rect) {
-    const { context: ctx, background, title, titleColor, resolution } = this;
+    const { context: ctx, background, title, titleColor, resolution } = this
     ctx.fillStyle = background;
     ctx.fillRect(frame.x, frame.y, frame.width, frame.height)
     if (title) {
       drawText(ctx, title, {
         x: 5 * resolution,
-        y: frame.y + 5 * resolution
+        y: frame.y + 6 * resolution
       }, {
-        font: `${11 * resolution}px serif`,
+        font: `${11 * resolution}px sans-serif`,
         color: titleColor
       })
     }
     this.labels.forEach(({ label, x, color }) => {
       drawText(ctx, label, {
         x: x * resolution,
-        y: frame.y + 5 * resolution
+        y: frame.y + 6 * resolution
       }, {
-        font: `${11 * resolution}px serif`,
+        font: `${11 * resolution}px sans-serif`,
         color
       })
     })

@@ -14,7 +14,7 @@ const VOLUME_THEME = {
   fall: '#7DCE8D',
   volumeText: '#F78081',
   titleBackground: '#F2F4F4',
-  title: '#333',
+  title: '#5E667F',
   gridLine: '#E7EAEB'
 }
 

@@ -52,10 +52,10 @@ export function drawYAxis(
     ctx.strokeStyle = lineColor
     ctx.beginPath()
     ctx.lineWidth = 0.8
-    ctx.font = `${11 * resolution}px serif`
+    ctx.font = `${11 * resolution}px sans-serif`
     ctx.textAlign = 'left'
     ctx.textBaseline = 'bottom'
-    tickValues.forEach(({value, color = 'black' }, i) => {
+    tickValues.forEach(({value, color = '#5E667F' }, i) => {
       const y = scale(value)
       if (withLine) {
         ctx.moveTo(PADDING_LEFT * resolution, y)
@@ -77,14 +77,15 @@ export function drawXAxis(
   withTick = true,
   lineColor = 'black',
   formatter: (v: number, i: number) => string = (v: number) => v.toFixed(2),
+  tickColor = '#5E667F'
 ) {
     ctx.save()
     ctx.strokeStyle = lineColor
     ctx.beginPath()
     ctx.lineWidth = 0.8
-    ctx.font = `${11 * resolution}px serif`
+    ctx.font = `${11 * resolution}px sans-serif`
     ctx.textAlign = 'left'
-    ctx.fillStyle = 'black'
+    ctx.fillStyle = tickColor
     ctx.textBaseline = 'top'
     const bottomY = frame.y + frame.height
     tickValues.forEach((value, i) => {
