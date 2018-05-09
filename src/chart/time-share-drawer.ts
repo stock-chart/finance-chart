@@ -13,6 +13,9 @@ import { TITLE_HEIGHT } from '../constants/constants';
 
 const TIME_SHARE_THEME = {
   price: '#4B99FB',
+  rise: '#F55559',
+  fall: '#7DCE8D',
+  same: '#7DCE8D',
   linearGradient: [
     'rgba(75, 153, 251, 0.4)',
     'rgba(75, 153, 251, 0)'
@@ -96,14 +99,30 @@ export class TimeShareDrawer implements Drawer {
     return PADDING.bottom * this.chart.options.resolution
   }
   protected drawYAxis() {
+    const lastPrice = this.chart.lastPrice
+    const tickValues = divide(this.bottomValue(), this.topValue()).map(n => ({
+        value: n,
+        color: n > lastPrice ? TIME_SHARE_THEME.rise : TIME_SHARE_THEME.fall
+    }));
     drawYAxis(
       this.context,
-      divide(this.bottomValue(), this.topValue()).map(n => ({ value: n })),
+      tickValues,
       this.frame,
       this.yScale,
       this.chart.options.resolution,
       true,
       TIME_SHARE_THEME.gridLine,
+    )
+    drawYAxis(
+      this.context,
+      tickValues,
+      this.frame,
+      this.yScale,
+      this.chart.options.resolution,
+      false,
+      TIME_SHARE_THEME.gridLine,
+      (v) => `${((v - lastPrice) / lastPrice * 100).toFixed(2)}%`,
+      'right'
     )
   }
   protected drawXAxis() {

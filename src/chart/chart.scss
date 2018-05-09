@@ -1,5 +1,8 @@
 .finance-chart {
   position: relative;
+  canvas {
+    -webkit-tap-highlight-color: transparent;
+  }
 }
 .chart-detail {
   position: absolute;

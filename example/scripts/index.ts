@@ -15,6 +15,7 @@ function createTimeShare() {
     selector: '#time-share',
     resolution: (window.devicePixelRatio || 1) >= 2 ? 2 : 1,
     count: 240,
+    lastPrice: 15.2,
     data: MOCK_TIME_SHARE,
     mainDrawer: TimeShareDrawer,
     auxiliaryDrawers: [
@@ -83,6 +84,7 @@ function createKLine() {
     selector: '#candle-stick',
     resolution: (window.devicePixelRatio || 1) >= 2 ? 2 : 1,
     count: 60,
+    lastPrice: 50.49999809265137,
     data: MOCK_KLINE,
     mainDrawer: CandleStickDrawer,
     auxiliaryDrawers: [

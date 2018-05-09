@@ -57,12 +57,13 @@ export function drawYAxis(
     ctx.textBaseline = 'bottom'
     tickValues.forEach(({value, color = '#5E667F' }, i) => {
       const y = scale(value)
+      let x = align === 'left' ? (PADDING_LEFT - 3) * resolution : frame.width
       if (withLine) {
         ctx.moveTo(PADDING_LEFT * resolution, y)
         ctx.lineTo(frame.width - PADDING_RIGHT * resolution, y)
       }
       ctx.fillStyle = color
-      ctx.fillText(formatter(value, i), (PADDING_LEFT - 3) * resolution, y)
+      ctx.fillText(formatter(value, i), x, y)
     })
     ctx.stroke()
     ctx.restore()

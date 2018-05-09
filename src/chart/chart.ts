@@ -29,6 +29,7 @@ export interface ChartOptions {
    * Selector use in document.querySelector or an document element
    */
   selector: string | HTMLElement;
+  lastPrice: number;
   data: any[];
   mainDrawer?: DrawerContructor;
   resolution?: number;
@@ -74,6 +75,7 @@ export function shouldRedraw() {
 function createOptions(
   {
     selector,
+    lastPrice,
     data = [],
     resolution = 1,
     count = 240,
@@ -92,6 +94,7 @@ function createOptions(
   }
   return {
     selector,
+    lastPrice,
     data,
     resolution,
     count,
@@ -125,7 +128,10 @@ export class Chart {
   selectedAuxiliaryDrawer = 0
   destroyed = false
   data: any[]
-
+  /**
+   * 昨收价
+   */
+  lastPrice: number
   private detailPoint: Point
   private interactive: InteractiveState = InteractiveState.None
 
@@ -136,7 +142,8 @@ export class Chart {
     this.onMouseLeave = this.onMouseLeave.bind(this)
 
     this.options = createOptions(options)
-    this.data = this.options.data;
+    this.data = this.options.data
+    this.lastPrice = this.options.lastPrice
     this.resize = this.resize.bind(this)
   
     this.create()
@@ -224,6 +231,10 @@ export class Chart {
     }
     this.mainDrawer && this.mainDrawer.setData(data)
     this.auxiliaryDrawer && this.auxiliaryDrawer.forEach(drawer => drawer.setData(data))
+  }
+  @shouldRedraw()
+  public setLastPrice(value: number) {
+    this.lastPrice = value
   }
   resetXScale() {
     const { resolution, count } = this.options;
