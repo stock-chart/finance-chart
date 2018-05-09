@@ -125,6 +125,7 @@ export class Chart {
   selectedAuxiliaryDrawer = 0
   destroyed = false
   data: any[]
+
   private detailPoint: Point
   private interactive: InteractiveState = InteractiveState.None
 
@@ -275,6 +276,7 @@ export class Chart {
     this.mainDrawer.detailProvider(this.detailPoint, selectedIndex)
     this.auxiliaryDrawer[this.selectedAuxiliaryDrawer]
       .detailProvider(this.detailPoint, selectedIndex)
+    this.drawDetail()
   }
   private watchDetail() {
     const { canvas } = this;
@@ -326,13 +328,14 @@ export class Chart {
       this.detailElement.style.left = 'auto'
       this.detailElement.style.right = '0'
     }
+  }
+  private drawDetail() {
     const xScale = this.xScale.clamp(true)
-
     const detailIndex = Math.min(
-      Math.round(xScale.invert(x * this.options.resolution)),
-      data.length - 1
+      Math.round(xScale.invert(this.detailPoint.x)),
+      this.data.length - 1
     )
-    const { title, tables } = this.options.detailProvider(detailIndex, data)
+    const { title, tables } = this.options.detailProvider(detailIndex, this.data)
     const fragment = document.createDocumentFragment()
     const $title = document.createElement('div')
     $title.className = 'chart-detail__title'
