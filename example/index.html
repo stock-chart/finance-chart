@@ -2,13 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta content="width=device-width, initial-scale=1.0, user-scalable=no, telephone=no"
+          name="viewport">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>finance-chart example</title>
   <style>
     #time-share, #candle-stick {
       height: 340px;
-      margin: 30px;
+      margin: 20px;
+      margin-bottom: 40px;
+      margin-top: 0;
+    }
+    @media screen and (max-width: 500px) {
+      #time-share, #candle-stick {
+        margin-left: 0;
+        margin-right: 0;
+      }
     }
   </style>
 </head>

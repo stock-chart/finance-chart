@@ -48,7 +48,7 @@ function createTimeShare() {
     }
   })
   function autoUpdateTimeShare() {
-    if (MOCK_TIME_SHARE.length < 240) {
+    if (MOCK_TIME_SHARE.length < 240 - 1) {
       setTimeout(autoUpdateTimeShare, 500)
     }
     const last = MOCK_TIME_SHARE[MOCK_TIME_SHARE.length - 1]
@@ -83,7 +83,7 @@ function createKLine() {
   const klineChart = new Chart({
     selector: '#candle-stick',
     resolution: (window.devicePixelRatio || 1) >= 2 ? 2 : 1,
-    count: 60,
+    count: 50,
     lastPrice: 50.49999809265137,
     data: MOCK_KLINE,
     mainDrawer: CandleStickDrawer,

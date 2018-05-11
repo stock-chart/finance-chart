@@ -1,6 +1,6 @@
 {
   "name": "@dz-web/finance-chart",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "finance chart for dz-web",
   "main": "index.js",
   "types": "./dist/index.d.ts",
@@ -36,6 +36,7 @@
     "enzyme-adapter-react-16": "^1.1.1",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "html-webpack-plugin": "^3.2.0",
+    "ip": "^1.1.5",
     "jest": "^22.4.3",
     "node-sass": "^4.8.3",
     "postcss": "^6.0.21",
@@ -60,10 +61,12 @@
     "@types/d3-array": "^1.2.1",
     "@types/d3-scale": "^2.0.0",
     "@types/d3-shape": "^1.2.2",
+    "@types/detect-it": "^2.1.0",
     "core-js": "^2.5.5",
     "d3-array": "^1.2.1",
     "d3-scale": "^2.0.0",
     "d3-shape": "^1.2.0",
+    "detect-it": "^3.0.5",
     "lodash.clamp": "^4.0.3",
     "lodash.uniq": "^4.5.0"
   },

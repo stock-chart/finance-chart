@@ -126,9 +126,8 @@ export class TimeShareDrawer implements Drawer {
     )
   }
   protected drawXAxis() {
-    let tickValues = uniq(divide(0, this.chart.options.count, 5)
+    let tickValues = uniq(divide(0, this.chart.options.count - 1, 5)
       .map(t => Math.floor(t)))
-    tickValues.pop()
     drawXAxis(
       this.context,
       tickValues,

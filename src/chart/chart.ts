@@ -1,3 +1,4 @@
+import detectIt from 'detect-it';
 import clamp from 'lodash.clamp';
 import { ScaleLinear } from '../../node_modules/@types/d3-scale/index'
 import { scaleLinear } from 'd3-scale'
@@ -134,12 +135,16 @@ export class Chart {
   lastPrice: number
   private detailPoint: Point
   private interactive: InteractiveState = InteractiveState.None
+  private touchTimeoutId: number = null
 
   constructor(options: ChartOptions) {
 
     this.onMouseEnter = this.onMouseEnter.bind(this)
     this.onMouseMove = this.onMouseMove.bind(this)
     this.onMouseLeave = this.onMouseLeave.bind(this)
+    this.onTouchStart = this.onTouchStart.bind(this);
+    this.onTouchMove = this.onTouchMove.bind(this);
+    this.onTouchEnd = this.onTouchEnd.bind(this);
 
     this.options = createOptions(options)
     this.data = this.options.data
@@ -239,7 +244,7 @@ export class Chart {
   resetXScale() {
     const { resolution, count } = this.options;
     this.xScale = scaleLinear()
-      .domain([0, count])
+      .domain([0, count - 1])
       .range([PADDING_LEFT * resolution, this.width - PADDING_RIGHT * resolution])
   }
   public drawAtEndOfFrame() {
@@ -294,9 +299,51 @@ export class Chart {
     this.detailElement = document.createElement('div')
     this.detailElement.className = 'chart-detail'
     this.rootElement.appendChild(this.detailElement)
-    canvas.addEventListener('mouseenter', this.onMouseEnter)
-    canvas.addEventListener('mousemove', this.onMouseMove)
-    canvas.addEventListener('mouseleave', this.onMouseLeave)
+    canvas.addEventListener('contextmenu', e => e.preventDefault())
+    // 'hybrid' on android system
+    if (detectIt.deviceType === 'mouseOnly') {
+      canvas.addEventListener('mouseenter', this.onMouseEnter)
+      canvas.addEventListener('mousemove', this.onMouseMove)
+      canvas.addEventListener('mouseleave', this.onMouseLeave)
+    } else {
+      canvas.addEventListener('touchstart', this.onTouchStart)
+      canvas.addEventListener('touchmove', this.onTouchMove)
+      canvas.addEventListener('touchend', this.onTouchEnd)
+    }
+  }
+  private onTouchStart(e: TouchEvent) {
+    const rect = (<HTMLElement>e.target).getBoundingClientRect()
+    const { clientX, clientY } = e.touches[0]
+    this.touchTimeoutId = window.setTimeout(() => {
+      this.showDetail(
+        clientX - rect.left,
+        clientY - rect.top
+      )
+      this.touchTimeoutId = null
+    }, 100)
+  }
+  private onTouchMove(e: TouchEvent) {
+    if (this.interactive === InteractiveState.ShowDetail) {
+      e.preventDefault()
+      const rect = (<HTMLElement>e.target).getBoundingClientRect()
+      const { clientX, clientY } = e.touches[0]
+      this.showDetail(
+        clientX - rect.left,
+        clientY - rect.top
+      )
+    } else {
+      this.clearTouchTimeout()
+    }
+  }
+  private onTouchEnd(e: TouchEvent) {
+    this.clearTouchTimeout()
+    this.hideDetail()
+  }
+  private clearTouchTimeout() {
+    if (this.touchTimeoutId) {
+      clearTimeout(this.touchTimeoutId);
+    }
+    this.touchTimeoutId = null;
   }
   private onMouseEnter(e: MouseEvent) {
     const rect = (<HTMLElement>e.target).getBoundingClientRect()
@@ -380,6 +427,9 @@ export class Chart {
     this.canvas.removeEventListener('mouseenter', this.onMouseEnter)
     this.canvas.removeEventListener('mousemove', this.onMouseEnter)
     this.canvas.removeEventListener('mouseleave', this.onMouseEnter)
+    this.canvas.removeEventListener('touchstart', this.onTouchStart)
+    this.canvas.removeEventListener('touchmove', this.onTouchMove)
+    this.canvas.removeEventListener('touchend', this.onTouchEnd)
     if (this.requestAnimationFrameId) {
       cancelAnimationFrame(this.requestAnimationFrameId)
     }

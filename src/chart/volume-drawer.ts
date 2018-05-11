@@ -106,8 +106,7 @@ export class VolumeDrawer implements Drawer {
     return TITLE_HEIGHT * this.chart.options.resolution
   }
   protected drawXAxis() {
-    const tickValues = divide(0, this.chart.options.count, 5)
-    tickValues.pop()
+    const tickValues = divide(0, this.chart.options.count - 1, 5)
     drawXAxis(
       this.context,
       tickValues,

@@ -57,7 +57,7 @@ export function drawYAxis(
     ctx.textBaseline = 'bottom'
     tickValues.forEach(({value, color = '#5E667F' }, i) => {
       const y = scale(value)
-      let x = align === 'left' ? (PADDING_LEFT - 3) * resolution : frame.width
+      let x = align === 'left' ? (PADDING_LEFT - 3) * resolution : frame.width - 2 * resolution
       if (withLine) {
         ctx.moveTo(PADDING_LEFT * resolution, y)
         ctx.lineTo(frame.width - PADDING_RIGHT * resolution, y)
@@ -84,8 +84,8 @@ export function drawXAxis(
     ctx.strokeStyle = lineColor
     ctx.beginPath()
     ctx.lineWidth = 0.8
-    ctx.font = `${11 * resolution}px sans-serif`
-    ctx.textAlign = 'left'
+    ctx.font = `${10 * resolution}px sans-serif`
+    ctx.textAlign = 'center'
     ctx.fillStyle = tickColor
     ctx.textBaseline = 'top'
     const bottomY = frame.y + frame.height

@@ -131,12 +131,12 @@ export class CandleStickDrawer implements Drawer {
     )
   }
   protected drawXAxis() {
-    // TODO: optimize ticks
-    let tickValues = uniq(divide(0, this.chart.options.count, 5)
+    let tickValues = uniq(divide(0, this.chart.options.count - 1, 5)
       .map(t => Math.floor(t)))
-    if (this.chart.options.count - this.data.length <= 8) {
-      tickValues.pop()
-    }
+    // console.log(tickValues)
+    // if (this.chart.options.count - this.data.length <= 8) {
+    //   tickValues.pop()
+    // }
     drawXAxis(
       this.context,
       tickValues,

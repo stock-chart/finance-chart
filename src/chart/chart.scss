@@ -2,6 +2,7 @@
   position: relative;
   canvas {
     -webkit-tap-highlight-color: transparent;
+    user-select: none;
   }
 }
 .chart-detail {
