@@ -9,7 +9,7 @@ import { Rect, Point } from "../graphic/primitive";
 import { ChartTitle } from "./chart-title";
 import { divide } from "../algorithm/divide";
 import { formateDate } from "../algorithm/date";
-import { TITLE_HEIGHT } from '../constants/constants';
+import { TITLE_HEIGHT, X_AXIS_HEIGHT } from '../constants/constants';
 
 const TIME_SHARE_THEME = {
   price: '#4B99FB',
@@ -25,26 +25,18 @@ const TIME_SHARE_THEME = {
   gridLine: '#E7EAEB'
 }
 
-const PADDING = {
-  bottom: 25,
-};
-
 export interface TimeShareData {
   price: number;
   avg: number;
   time: number;
 }
 
-export class TimeShareDrawer implements Drawer {
-  context: CanvasRenderingContext2D
-  yScale: ScaleLinear<number, number>
-  frame: Rect = { x: 0, y: 0, width: 0, height: 0}
-  chartFrame: Rect = { x: 0, y: 0, width: 0, height: 0}
+export class TimeShareDrawer extends Drawer {
   titleDrawer: ChartTitle
-  minValue = 0
-  maxValue = 0
-  private data: TimeShareData[]
-  constructor(public chart: Chart, data: TimeShareData[] = []) {
+  protected data: TimeShareData[]
+  constructor(chart: Chart, data: TimeShareData[] = []) {
+    super(chart, data)
+    this.xAxisTickHeight = X_AXIS_HEIGHT
     this.context = chart.context
     this.titleDrawer = new ChartTitle(
       this.context,
@@ -73,10 +65,29 @@ export class TimeShareDrawer implements Drawer {
     this.maxValue = max(merge)
     this.resetYScale()
   }
+  public detailProvider(selectedIndex: number): FrontSightDetail {
+    super.detailProvider(selectedIndex)
+    return {
+      left: '',
+      right: ''
+    }
+  }
+  public draw(){
+    if (this.data && this.data.length > 0) {
+      const { frame } = this;
+      this.drawAxes();
+      this.titleDrawer.draw({
+        ...frame,
+        height: this.titleHeight
+      })
+      this.drawTimeShare()
+    }
+  }
   @autoResetStyle()
-  public detailProvider(point: Point, selectedIndex: number): FrontSightDetail {
+  public drawFrontSight() {
     const { context: ctx, yScale, data } = this
     const { xScale } = this.chart
+    const selectedIndex = this.selectedIndex
     const x = xScale(selectedIndex)
     const size = 5 * this.chart.options.resolution
     ctx.beginPath()
@@ -87,16 +98,10 @@ export class TimeShareDrawer implements Drawer {
     ctx.arc(x, yScale(data[selectedIndex].avg), size, 0, Math.PI * 2)
     ctx.fillStyle = TIME_SHARE_THEME.avg
     ctx.fill()
-    return {
-      left: '',
-      right: ''
-    }
   }
-  private get titleHeight() {
-    return TITLE_HEIGHT * this.chart.options.resolution
-  }
-  private get xAxisTickHeight() {
-    return PADDING.bottom * this.chart.options.resolution
+  public resize(frame: Rect) {
+    super.resize(frame)
+    this.resetYScale()
   }
   protected drawYAxis() {
     const lastPrice = this.chart.lastPrice
@@ -148,29 +153,9 @@ export class TimeShareDrawer implements Drawer {
       }
     )
   }
-  public drawAxes() {
+  protected drawAxes() {
     this.drawXAxis()
     this.drawYAxis()
-  }
-  resize(frame: Rect) {
-    this.frame = frame;
-    this.chartFrame = {
-      ...frame,
-      y: frame.y + this.titleHeight,
-      height: frame.height - this.titleHeight - this.xAxisTickHeight
-    }
-    this.resetYScale()
-  }
-  public draw(){
-    if (this.data && this.data.length > 0) {
-      const { frame } = this;
-      this.drawAxes();
-      this.titleDrawer.draw({
-        ...frame,
-        height: this.titleHeight
-      })
-      this.drawTimeShare()
-    }
   }
   @autoResetStyle()
   protected drawTimeShare() {
@@ -204,31 +189,5 @@ export class TimeShareDrawer implements Drawer {
       })),
       color
     )
-  }
-  topValue = ((lastTopValue = Number.MIN_VALUE) => {
-    return () => {
-      const top = this.maxValue * (1.01)
-      if (top > lastTopValue) {
-        lastTopValue = top
-      }
-      return lastTopValue
-    }
-  }
-  )()
-  bottomValue = ((lastBottomValue = Number.MAX_VALUE) => 
-    () => {
-      const bottom = this.minValue * (0.99)
-      if (bottom < lastBottomValue) {
-        lastBottomValue = bottom
-      }
-      return lastBottomValue
-    }
-  )()
-  protected resetYScale() {
-    const { chartFrame } = this;
-    const resolution = this.chart.options.resolution
-    this.yScale = scaleLinear()
-      .domain([this.bottomValue(), this.topValue()])
-      .range([chartFrame.y + chartFrame.height, chartFrame.y + 15 * resolution])
   }
 }

@@ -15,14 +15,75 @@ export interface FrontSightDetail {
   right: string;
 }
 
-export interface Drawer {
-  chart: Chart
+export class Drawer {
   context: CanvasRenderingContext2D
-  frame: Rect
-  draw(): void
-  resize(frame: Rect): void
-  setData(data: Object[]): void
-  detailProvider(point: Point, selectedIndex: number) : FrontSightDetail
+  frame: Rect = { x: 0, y: 0, width: 0, height: 0}
+  chartFrame: Rect = { x: 0, y: 0, width: 0, height: 0}
+  protected data: Object[]
+  protected selectedIndex: number
+  protected minValue = 0
+  protected maxValue = 0
+  protected xAxisTickHeight = 0
+  protected yScale: ScaleLinear<number, number>
+  constructor(public chart: Chart, data: Object[]) {
+    this.context = chart.context
+    this.selectedIndex = data.length - 1
+  }
+  draw() {
+
+  }
+  drawFrontSight() {
+
+  }
+  resize(frame: Rect) {
+    const { resolution } = this.chart.options
+    this.frame = frame
+    this.chartFrame = {
+      ...frame,
+      y: frame.y + this.titleHeight,
+      height: frame.height -
+        this.titleHeight -
+        this.xAxisTickHeight * resolution
+    }
+  }
+  setData(data: Object[]) {
+    this.data = data;
+  }
+  detailProvider(selectedIndex: number): FrontSightDetail {
+    this.selectedIndex = selectedIndex
+    return {
+      left: '',
+      right: ''
+    }
+  }
+  protected get titleHeight() {
+    return TITLE_HEIGHT * this.chart.options.resolution
+  }
+  protected topValue = ((lastMaxValue = 0, lastTopValue = Number.MIN_VALUE) => 
+    () => {
+      const top = this.maxValue * (1.01)
+      if (top > lastTopValue) {
+        lastTopValue = top
+      }
+      return lastTopValue
+    }
+  )()
+  protected bottomValue = ((lastMinValue = 0, lastBottomValue = Number.MAX_VALUE) => 
+    () => {
+      const bottom = this.minValue * (0.99)
+      if (bottom < lastBottomValue) {
+        lastBottomValue = bottom
+      }
+      return lastBottomValue
+    }
+  )()
+  protected resetYScale() {
+    const { chartFrame } = this;
+    const resolution = this.chart.options.resolution
+    this.yScale = scaleLinear()
+      .domain([this.bottomValue(), this.topValue()])
+      .range([chartFrame.y + chartFrame.height, chartFrame.y + 15 * resolution])
+  }
 }
 
 export interface ChartOptions {
@@ -274,13 +335,12 @@ export class Chart {
     const { resolution } = this.options
     let { x, y } = this.detailPoint
     const { xScale } = this
-    const selectedIndex = clamp(Math.round(xScale.invert(x)), 0, this.data.length - 1)
-    x = xScale(selectedIndex)
+    x = xScale(this.clampSelectedIndex())
     ctx.beginPath()
     ctx.moveTo(x, TITLE_HEIGHT * resolution)
     ctx.lineTo(x, this.height)
-    ctx.moveTo(PADDING_LEFT * resolution, y)
-    ctx.lineTo(this.width - PADDING_RIGHT * resolution, y)
+    ctx.moveTo(0, y)
+    ctx.lineTo(this.width, y)
     ctx.lineWidth = 1
     ctx.strokeStyle = Chart.Theme.frontSight
     // not support in ie 10
@@ -289,9 +349,7 @@ export class Chart {
     }
     ctx.stroke()
 
-    this.mainDrawer.detailProvider(this.detailPoint, selectedIndex)
-    this.auxiliaryDrawer[this.selectedAuxiliaryDrawer]
-      .detailProvider(this.detailPoint, selectedIndex)
+    this.forEachVisibleDrawer(drawer => drawer.drawFrontSight())
     this.drawDetail()
   }
   private watchDetail() {
@@ -386,6 +444,21 @@ export class Chart {
       this.detailElement.style.left = 'auto'
       this.detailElement.style.right = '0'
     }
+    this.detailAt(this.clampSelectedIndex())
+  }
+  private detailAt(i: number) {
+    this.forEachVisibleDrawer(drawer => drawer.detailProvider(i))
+  }
+  private forEachVisibleDrawer(action: (drawer: Drawer) => void) {
+    this.mainDrawer && action(this.mainDrawer)
+    const drawer = this.auxiliaryDrawer[this.selectedAuxiliaryDrawer]
+    drawer && action(drawer)
+  }
+  private clampSelectedIndex() {
+    return clamp(
+      Math.round(this.xScale.invert(this.detailPoint.x)), 0,
+      this.data.length - 1
+    )
   }
   private drawDetail() {
     const xScale = this.xScale.clamp(true)
@@ -420,6 +493,7 @@ export class Chart {
   private hideDetail() {
     this.interactive = InteractiveState.None
     this.detailElement.style.display = 'none'
+    this.detailAt(null)
   }
   destroy() {
     this.destroyed = true

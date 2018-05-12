@@ -9,7 +9,7 @@ import { ChartTitle } from "./chart-title";
 import { divide } from "../algorithm/divide";
 import { formateDate } from "../algorithm/date";
 import { trimNulls } from "../algorithm/arrays";
-import { TITLE_HEIGHT } from '../constants/constants';
+import { TITLE_HEIGHT, X_AXIS_HEIGHT } from '../constants/constants';
 import { Point } from '../graphic/primitive';
 
 const THEME = {
@@ -20,10 +20,6 @@ const THEME = {
   title: '#5E667F',
   gridLine: '#E7EAEB'
 }
-
-const PADDING = {
-  bottom: 25,
-};
 
 export interface CandleStickData {
   time: string;
@@ -39,18 +35,14 @@ export interface MAIndicator {
   color: string;
 }
 
-export class CandleStickDrawer implements Drawer {
+export class CandleStickDrawer extends Drawer {
   static MAIndicators: MAIndicator[] = []
 
-  context: CanvasRenderingContext2D
-  yScale: ScaleLinear<number, number>
-  frame: Rect = { x: 0, y: 0, width: 0, height: 0}
-  chartFrame: Rect = { x: 0, y: 0, width: 0, height: 0}
   titleDrawer: ChartTitle
-  minValue = 0
-  maxValue = 0
-  private data: CandleStickData[] = []
-  constructor(public chart: Chart, data: CandleStickData[] = []) {
+  protected data: CandleStickData[] = []
+  constructor(chart: Chart, data: CandleStickData[] = []) {
+    super(chart, data);
+    this.xAxisTickHeight = X_AXIS_HEIGHT
     this.context = chart.context
     this.titleDrawer = new ChartTitle(
       this.context,
@@ -87,37 +79,35 @@ export class CandleStickDrawer implements Drawer {
     this.maxValue = maxV
     this.resetYScale()
   }
-  public detailProvider(point: Point, selectedIndex: number): FrontSightDetail {
-    this.updateTitle(selectedIndex)
-    return {
-      left: '',
-      right: ''
+  public resize(frame: Rect) {
+    super.resize(frame)
+    this.resetYScale()
+  }
+  public draw(){
+    const { data } = this
+    if (data && data.length > 0){
+      const { frame } = this;
+      this.drawTitle(this.selectedIndex || this.data.length - 1)
+      this.drawAxes();
+      this.drawCandles()
+      this.drawMA()
     }
   }
-  private redrawTitle() {
-    const { context: ctx, frame } = this
-    ctx.clearRect(0, frame.y, frame.width, this.titleHeight)
-    this.titleDrawer.draw({
-      ...this.frame,
-      height: this.titleHeight
-    })
+  get MAIndicators() {
+    return Object.getPrototypeOf(this).constructor.MAIndicators as MAIndicator[]
   }
-  private updateTitle(i: number) {
+  private drawTitle(i: number) {
+    const { context: ctx, frame } = this
     const d = this.data[i]
     this.MAIndicators.forEach(({ key }, i) => {
       const m = ((d[key] as number) || 0).toFixed(2)
       this.titleDrawer.setLabel(i, `${key.toUpperCase()}: ${m}`)
     })
-    this.redrawTitle()
-  }
-  get titleHeight() {
-    return TITLE_HEIGHT * this.chart.options.resolution
-  }
-  get xAxisTickHeight() {
-    return PADDING.bottom * this.chart.options.resolution
-  }
-  get MAIndicators() {
-    return Object.getPrototypeOf(this).constructor.MAIndicators as MAIndicator[]
+    ctx.clearRect(0, frame.y, frame.width, this.titleHeight)
+    this.titleDrawer.draw({
+      ...this.frame,
+      height: this.titleHeight
+    })
   }
   protected drawYAxis() {
     drawYAxis(
@@ -133,10 +123,6 @@ export class CandleStickDrawer implements Drawer {
   protected drawXAxis() {
     let tickValues = uniq(divide(0, this.chart.options.count - 1, 5)
       .map(t => Math.floor(t)))
-    // console.log(tickValues)
-    // if (this.chart.options.count - this.data.length <= 8) {
-    //   tickValues.pop()
-    // }
     drawXAxis(
       this.context,
       tickValues,
@@ -154,28 +140,9 @@ export class CandleStickDrawer implements Drawer {
       }
     )
   }
-  public drawAxes() {
+  protected drawAxes() {
     this.drawXAxis()
     this.drawYAxis()
-  }
-  resize(frame: Rect) {
-    this.frame = frame;
-    this.chartFrame = {
-      ...frame,
-      y: frame.y + this.titleHeight,
-      height: frame.height - this.titleHeight - this.xAxisTickHeight
-    }
-    this.resetYScale()
-  }
-  public draw(){
-    const { data } = this
-    if (data && data.length > 0){
-      const { frame } = this;
-      this.updateTitle(data.length - 1)
-      this.drawAxes();
-      this.drawCandles()
-      this.drawMA()
-    }
   }
   protected drawMA() {
     const { data, yScale } = this
@@ -218,30 +185,5 @@ export class CandleStickDrawer implements Drawer {
       ctx.fillRect(x + width / 2, yScale(d.high), 1, yScale(maxV) - yScale(d.high))
       ctx.fillRect(x + width / 2, yScale(minV), 1, yScale(d.low) - yScale(minV))
     })
-  }
-  topValue = ((lastMaxValue = 0, lastTopValue = Number.MIN_VALUE) => 
-    () => {
-      const top = this.maxValue * (1.01)
-      if (top > lastTopValue) {
-        lastTopValue = top
-      }
-      return lastTopValue
-    }
-  )()
-  bottomValue = ((lastMinValue = 0, lastBottomValue = Number.MAX_VALUE) => 
-    () => {
-      const bottom = this.minValue * (0.99)
-      if (bottom < lastBottomValue) {
-        lastBottomValue = bottom
-      }
-      return lastBottomValue
-    }
-  )()
-  protected resetYScale() {
-    const { chartFrame } = this;
-    const resolution = this.chart.options.resolution
-    this.yScale = scaleLinear()
-      .domain([this.bottomValue(), this.topValue()])
-      .range([chartFrame.y + chartFrame.height, chartFrame.y + 15 * resolution])
   }
 }

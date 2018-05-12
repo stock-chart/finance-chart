@@ -33,7 +33,7 @@ const volumeLabel = (v: number) => {
 /**
  * Volume chart drawer
  */
-export class VolumeDrawer implements Drawer {
+export class VolumeDrawer extends Drawer {
   static proportion = 100
   static unit = '手'
   context: CanvasRenderingContext2D
@@ -44,7 +44,8 @@ export class VolumeDrawer implements Drawer {
   minValue = 0
   maxValue = 0
   data: VolumeData[]
-  constructor(public chart: Chart, data: VolumeData[]) {
+  constructor(chart: Chart, data: VolumeData[]) {
+    super(chart, data)
     this.context = chart.context
     this.titleDrawer = new ChartTitle(
       this.context,
@@ -62,48 +63,29 @@ export class VolumeDrawer implements Drawer {
     this.setData(data)
   }
   public resize(frame: Rect): void {
-    this.frame = frame
-    this.chartFrame = {
-      ...frame,
-      y: frame.y + this.titleHeight,
-      height: frame.height - this.titleHeight
-    }
+    super.resize(frame)
     this.resetYScale()
   }
   public draw() {
     const { frame, data } = this
     if (data.length === 0 ) return
     this.drawAxes()
-    this.updateTitle(data.length - 1)
+    this.drawTitle(this.selectedIndex || this.data.length - 1)
     this.drawVolumes()
   }
   public setData(data: VolumeData[]) {
-    this.data = data
+    super.setData(data)
     this.minValue = min(data, d => d.volume)
     this.maxValue = max(data, d => d.volume)
     this.resetYScale()
   }
-  public detailProvider(point: Point, selectedIndex: number): FrontSightDetail {
-    this.updateTitle(selectedIndex)
-    return {
-      left: '',
-      right: ''
-    }
-  }
-  private updateTitle(i: number) {
+  private drawTitle(i: number) {
     this.titleDrawer.setLabel(0, volumeLabel(this.data[i].volume))
-    this.redrawTitle()
-  }
-  private redrawTitle() {
     const { context: ctx, frame } = this
-    ctx.clearRect(0, frame.y, frame.width, this.titleHeight)
     this.titleDrawer.draw({
       ...this.frame,
       height: this.titleHeight
     })
-  }
-  get titleHeight() {
-    return TITLE_HEIGHT * this.chart.options.resolution
   }
   protected drawXAxis() {
     const tickValues = divide(0, this.chart.options.count - 1, 5)
