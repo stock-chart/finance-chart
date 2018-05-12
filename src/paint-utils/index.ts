@@ -53,11 +53,17 @@ export function drawYAxis(
     ctx.beginPath()
     ctx.lineWidth = 0.8
     ctx.font = `${10 * resolution}px sans-serif`
-    ctx.textAlign = 'right'
     ctx.textBaseline = 'bottom'
+    let x: number
+    if (align === 'left') {
+      ctx.textAlign = 'right'
+      x = (PADDING_LEFT - 3) * resolution
+    } else {
+      ctx.textAlign = 'left'
+      x = frame.width - (PADDING_RIGHT - 3) * resolution
+    }
     tickValues.forEach(({value, color = '#5E667F' }, i) => {
       const y = scale(value)
-      let x = align === 'left' ? (PADDING_LEFT - 3) * resolution : frame.width - 2 * resolution
       if (withLine) {
         ctx.moveTo(PADDING_LEFT * resolution, y)
         ctx.lineTo(frame.width - PADDING_RIGHT * resolution, y)

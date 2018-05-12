@@ -1,5 +1,5 @@
 import uniq from 'lodash.uniq'
-import { Chart, autoResetStyle, Drawer, FrontSightDetail } from "./chart"
+import { Chart, autoResetStyle, Drawer } from "./chart"
 import { ScaleLinear } from "../../node_modules/@types/d3-scale/index"
 import { area } from 'd3-shape'
 import { scaleLinear } from 'd3-scale'
@@ -47,7 +47,7 @@ export class CandleStickDrawer extends Drawer {
     this.titleDrawer = new ChartTitle(
       this.context,
       'MA', this.MAIndicators.map(({key, color}, i) => ({
-        x: i * 80 + 40,
+        x: i * 80 + 60,
         label: `${key.toUpperCase()}: 0`,
         color
       })),
@@ -169,9 +169,10 @@ export class CandleStickDrawer extends Drawer {
       const maxV = Math.max(d.close, d.open),
             minV = Math.min(d.close, d.open),
             y = yScale(maxV),
-            height = Math.abs(yScale(d.close) - yScale(d.open)),
-            width = xScale(1) - xScale(0) - 2,
-            x = xScale(i) - width / 2
+            height = Math.abs(yScale(d.close) - yScale(d.open))
+      let width = xScale(1) - xScale(0)
+      width -= width * 0.2
+      const x = xScale(i) - width / 2
       if (d.close > d.open) {
         ctx.fillStyle = ctx.strokeStyle = THEME.rise
         ctx.strokeRect(x, y, width, height)

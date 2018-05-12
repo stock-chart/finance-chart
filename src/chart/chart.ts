@@ -10,7 +10,7 @@ export interface DrawerContructor {
   new (chart: Chart, data: any[]): Drawer
 }
 
-export interface FrontSightDetail {
+export interface YAxisDetail {
   left: string;
   right: string;
 }
@@ -49,11 +49,13 @@ export class Drawer {
   setData(data: Object[]) {
     this.data = data;
   }
-  detailProvider(selectedIndex: number): FrontSightDetail {
-    this.selectedIndex = selectedIndex
+  select(i: number) {
+    this.selectedIndex = i
+  }
+  getYAxisDetail(y: number): YAxisDetail {
     return {
-      left: '',
-      right: ''
+      left: null,
+      right: null
     }
   }
   protected get titleHeight() {
@@ -174,7 +176,8 @@ enum InteractiveState {
 }
 export class Chart {
   static Theme = {
-    frontSight: '#4B99FB'
+    frontSight: '#4B99FB',
+    frontSightLabelBackground: '#E2F1FE',
   }
   options: ChartOptions
   requestAnimationFrameId: number = null
@@ -312,9 +315,9 @@ export class Chart {
     if (!this.requestAnimationFrameId) {
       this.requestAnimationFrameId = requestAnimationFrame(() => {
         this.context.clearRect(0, 0, this.width, this.height)
-        // if (process.env.NODE_ENV === 'development') {
-        //   console.time('rendering cost');
-        // }
+        if (process.env.NODE_ENV === 'development') {
+          console.time('rendering cost');
+        }
         this.mainDrawer && this.mainDrawer.draw()
         this.auxiliaryDrawer[this.selectedAuxiliaryDrawer] &&
           this.auxiliaryDrawer[this.selectedAuxiliaryDrawer].draw()
@@ -323,9 +326,9 @@ export class Chart {
           this.drawFrontSight();
         }
 
-        // if (process.env.NODE_ENV === 'development') {
-        //   console.timeEnd('rendering cost');
-        // }
+        if (process.env.NODE_ENV === 'development') {
+          console.timeEnd('rendering cost');
+        }
       })
     }
   }
@@ -348,8 +351,49 @@ export class Chart {
       ctx.setLineDash([2, 5, 15, 5])
     }
     ctx.stroke()
-
+    let yAxisDetail: YAxisDetail
+    if (y <= this.mainChartHeight) {
+      yAxisDetail = this.mainDrawer.getYAxisDetail(y)
+    } else {
+      const drawer = this.auxiliaryDrawer[this.selectedAuxiliaryDrawer]
+      yAxisDetail = drawer.getYAxisDetail(y)
+    }
     this.forEachVisibleDrawer(drawer => drawer.drawFrontSight())
+    ctx.strokeStyle = Chart.Theme.frontSight
+    // not support in ie 10
+    if (typeof ctx.setLineDash === 'function') {
+      ctx.setLineDash([])
+    }
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.font = `${10 * resolution}px sans-serif`
+    if (yAxisDetail.left) {
+      const rect: Rect = {
+        x: 0,
+        y,
+        width: PADDING_LEFT * resolution,
+        height: 20 * resolution
+      }
+      ctx.fillStyle = Chart.Theme.frontSightLabelBackground
+      ctx.fillRect(rect.x, rect.y - rect.height / 2, rect.width, rect.height)
+      ctx.strokeRect(rect.x, rect.y - rect.height / 2, rect.width, rect.height)
+      ctx.fillStyle = Chart.Theme.frontSight
+      ctx.fillText(yAxisDetail.left, rect.x + rect.width /2, y)
+    }
+    if (yAxisDetail.right) {
+      const w = PADDING_RIGHT * resolution
+      const rect: Rect = {
+        x: this.width - w,
+        y,
+        width: w,
+        height: 20 * resolution
+      }
+      ctx.fillStyle = Chart.Theme.frontSightLabelBackground
+      ctx.fillRect(rect.x, rect.y - rect.height / 2, rect.width, rect.height)
+      ctx.strokeRect(rect.x, rect.y - rect.height / 2, rect.width, rect.height)
+      ctx.fillStyle = Chart.Theme.frontSight
+      ctx.fillText(yAxisDetail.right, rect.x + rect.width / 2, y)
+    }
     this.drawDetail()
   }
   private watchDetail() {
@@ -447,7 +491,7 @@ export class Chart {
     this.detailAt(this.clampSelectedIndex())
   }
   private detailAt(i: number) {
-    this.forEachVisibleDrawer(drawer => drawer.detailProvider(i))
+    this.forEachVisibleDrawer(drawer => drawer.select(i))
   }
   private forEachVisibleDrawer(action: (drawer: Drawer) => void) {
     this.mainDrawer && action(this.mainDrawer)

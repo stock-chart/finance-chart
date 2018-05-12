@@ -1,5 +1,5 @@
 import uniq from 'lodash.uniq'
-import { Drawer, Chart, autoResetStyle, FrontSightDetail } from "./chart";
+import { Drawer, Chart, autoResetStyle } from "./chart";
 import { ScaleLinear } from "../../node_modules/@types/d3-scale/index";
 import { scaleLinear } from 'd3-scale';
 import { max, min } from 'd3-array';
@@ -51,7 +51,7 @@ export class VolumeDrawer extends Drawer {
       this.context,
       '成交量', [
         {
-          x: 100,
+          x: 60,
           label: volumeLabel(0),
           color: VOLUME_THEME.volumeText
         }
@@ -138,8 +138,9 @@ export class VolumeDrawer extends Drawer {
       ctx.fillStyle = this.calcDeltaPrice(d, i, this.data) > 0 ? VOLUME_THEME.rise : VOLUME_THEME.fall;
       const x = xScale(i),
             y = yScale(d.volume),
-            height = frame.height - (y - frame.y),
-            width = xScale(1) - xScale(0) - 2;
+            height = frame.height - (y - frame.y)
+      let width = xScale(1) - xScale(0)
+      width -= width * 0.2
       ctx.fillRect(x - width / 2, y, width, height)
     });
   }

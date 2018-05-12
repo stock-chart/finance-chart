@@ -1,5 +1,5 @@
 import uniq from 'lodash.uniq'
-import { Chart, autoResetStyle, Drawer, FrontSightDetail } from "./chart"
+import { Chart, autoResetStyle, Drawer, YAxisDetail } from "./chart"
 import { ScaleLinear } from "../../node_modules/@types/d3-scale/index"
 import { area } from 'd3-shape'
 import { min, max } from 'd3-array';
@@ -65,13 +65,6 @@ export class TimeShareDrawer extends Drawer {
     this.maxValue = max(merge)
     this.resetYScale()
   }
-  public detailProvider(selectedIndex: number): FrontSightDetail {
-    super.detailProvider(selectedIndex)
-    return {
-      left: '',
-      right: ''
-    }
-  }
   public draw(){
     if (this.data && this.data.length > 0) {
       const { frame } = this;
@@ -103,8 +96,15 @@ export class TimeShareDrawer extends Drawer {
     super.resize(frame)
     this.resetYScale()
   }
+  public getYAxisDetail(y: number): YAxisDetail {
+    const value = this.yScale.invert(y)
+    return {
+      left: value.toFixed(2),
+      right: this.deltaInPercentage(value)
+    }
+  }
   protected drawYAxis() {
-    const lastPrice = this.chart.lastPrice
+    const lastPrice = this.chart.options.lastPrice
     const tickValues = divide(this.bottomValue(), this.topValue()).map(n => ({
         value: n,
         color: n > lastPrice ? TIME_SHARE_THEME.rise : TIME_SHARE_THEME.fall
@@ -126,9 +126,13 @@ export class TimeShareDrawer extends Drawer {
       this.chart.options.resolution,
       false,
       TIME_SHARE_THEME.gridLine,
-      (v) => `${((v - lastPrice) / lastPrice * 100).toFixed(2)}%`,
+      (v) => this.deltaInPercentage(v),
       'right'
     )
+  }
+  protected deltaInPercentage(value: number): string {
+    const lastPrice = this.chart.options.lastPrice
+    return `${((value - lastPrice) / lastPrice * 100).toFixed(2)}%`
   }
   protected drawXAxis() {
     let tickValues = uniq(divide(0, this.chart.options.count - 1, 5)
