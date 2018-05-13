@@ -4,7 +4,7 @@ import { ScaleLinear } from '../../node_modules/@types/d3-scale/index'
 import { scaleLinear } from 'd3-scale'
 import { Rect, Point } from '../graphic/primitive';
 import './chart.scss';
-import { TITLE_HEIGHT, PADDING_LEFT, PADDING_RIGHT } from '../constants/constants';
+import { TITLE_HEIGHT, PADDING_LEFT, PADDING_RIGHT, TITLE_MARGIN_BOTTOM, X_AXIS_HEIGHT } from '../constants/constants';
 
 export interface DrawerContructor {
   new (chart: Chart, data: any[]): Drawer
@@ -12,7 +12,7 @@ export interface DrawerContructor {
 
 export interface YAxisDetail {
   left: string;
-  right: string;
+  right?: string;
 }
 
 export class Drawer {
@@ -23,7 +23,6 @@ export class Drawer {
   protected selectedIndex: number
   protected minValue = 0
   protected maxValue = 0
-  protected xAxisTickHeight = 0
   protected yScale: ScaleLinear<number, number>
   constructor(public chart: Chart, data: Object[]) {
     this.context = chart.context
@@ -43,7 +42,7 @@ export class Drawer {
       y: frame.y + this.titleHeight,
       height: frame.height -
         this.titleHeight -
-        this.xAxisTickHeight * resolution
+        this.xAxisTickHeight
     }
   }
   setData(data: Object[]) {
@@ -60,6 +59,9 @@ export class Drawer {
   }
   protected get titleHeight() {
     return TITLE_HEIGHT * this.chart.options.resolution
+  }
+  protected get xAxisTickHeight() {
+    return X_AXIS_HEIGHT * this.chart.options.resolution
   }
   protected topValue = ((lastMaxValue = 0, lastTopValue = Number.MIN_VALUE) => 
     () => {
@@ -84,7 +86,7 @@ export class Drawer {
     const resolution = this.chart.options.resolution
     this.yScale = scaleLinear()
       .domain([this.bottomValue(), this.topValue()])
-      .range([chartFrame.y + chartFrame.height, chartFrame.y + 15 * resolution])
+      .range([chartFrame.y + chartFrame.height, chartFrame.y + TITLE_MARGIN_BOTTOM * resolution])
   }
 }
 
@@ -144,7 +146,7 @@ function createOptions(
     resolution = 1,
     count = 240,
     mainDrawer,
-    mainRatio = 0.65,
+    mainRatio = 0.6,
     auxiliaryDrawers = [],
     detailProvider,
   }: ChartOptions
@@ -315,9 +317,9 @@ export class Chart {
     if (!this.requestAnimationFrameId) {
       this.requestAnimationFrameId = requestAnimationFrame(() => {
         this.context.clearRect(0, 0, this.width, this.height)
-        if (process.env.NODE_ENV === 'development') {
-          console.time('rendering cost');
-        }
+        // if (process.env.NODE_ENV === 'development') {
+        //   console.time('rendering cost');
+        // }
         this.mainDrawer && this.mainDrawer.draw()
         this.auxiliaryDrawer[this.selectedAuxiliaryDrawer] &&
           this.auxiliaryDrawer[this.selectedAuxiliaryDrawer].draw()
@@ -326,9 +328,9 @@ export class Chart {
           this.drawFrontSight();
         }
 
-        if (process.env.NODE_ENV === 'development') {
-          console.timeEnd('rendering cost');
-        }
+        // if (process.env.NODE_ENV === 'development') {
+        //   console.timeEnd('rendering cost');
+        // }
       })
     }
   }
@@ -338,10 +340,12 @@ export class Chart {
     const { resolution } = this.options
     let { x, y } = this.detailPoint
     const { xScale } = this
-    x = xScale(this.clampSelectedIndex())
+    const i = this.clampSelectedIndex()
+    this.detailAt(i)
+    x = xScale(i)
     ctx.beginPath()
     ctx.moveTo(x, TITLE_HEIGHT * resolution)
-    ctx.lineTo(x, this.height)
+    ctx.lineTo(x, this.height - X_AXIS_HEIGHT * resolution)
     ctx.moveTo(0, y)
     ctx.lineTo(this.width, y)
     ctx.lineWidth = 1
@@ -475,7 +479,8 @@ export class Chart {
       y: y * resolution
     }
     if (!data || data.length === 0) return
-    if (y < TITLE_HEIGHT) {
+    if (y < TITLE_HEIGHT ||
+        y > this.height / resolution - X_AXIS_HEIGHT) {
       this.hideDetail()
       return
     }
@@ -483,12 +488,11 @@ export class Chart {
     this.detailElement.style.display = 'block'
     if (this.detailPoint.x > this.width / 2) {
       this.detailElement.style.right = 'auto'
-      this.detailElement.style.left = '0'
+      this.detailElement.style.left = `${PADDING_LEFT}px`
     } else {
       this.detailElement.style.left = 'auto'
-      this.detailElement.style.right = '0'
+      this.detailElement.style.right = `${PADDING_RIGHT}px`
     }
-    this.detailAt(this.clampSelectedIndex())
   }
   private detailAt(i: number) {
     this.forEachVisibleDrawer(drawer => drawer.select(i))
@@ -500,7 +504,8 @@ export class Chart {
   }
   private clampSelectedIndex() {
     return clamp(
-      Math.round(this.xScale.invert(this.detailPoint.x)), 0,
+      Math.round(this.xScale.invert(this.detailPoint.x)),
+      0,
       this.data.length - 1
     )
   }

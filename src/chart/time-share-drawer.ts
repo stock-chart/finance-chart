@@ -36,7 +36,6 @@ export class TimeShareDrawer extends Drawer {
   protected data: TimeShareData[]
   constructor(chart: Chart, data: TimeShareData[] = []) {
     super(chart, data)
-    this.xAxisTickHeight = X_AXIS_HEIGHT
     this.context = chart.context
     this.titleDrawer = new ChartTitle(
       this.context,

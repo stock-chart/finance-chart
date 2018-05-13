@@ -1,5 +1,5 @@
 import uniq from 'lodash.uniq'
-import { Chart, autoResetStyle, Drawer } from "./chart"
+import { Chart, autoResetStyle, Drawer, YAxisDetail } from "./chart"
 import { ScaleLinear } from "../../node_modules/@types/d3-scale/index"
 import { area } from 'd3-shape'
 import { scaleLinear } from 'd3-scale'
@@ -41,8 +41,7 @@ export class CandleStickDrawer extends Drawer {
   titleDrawer: ChartTitle
   protected data: CandleStickData[] = []
   constructor(chart: Chart, data: CandleStickData[] = []) {
-    super(chart, data);
-    this.xAxisTickHeight = X_AXIS_HEIGHT
+    super(chart, data)
     this.context = chart.context
     this.titleDrawer = new ChartTitle(
       this.context,
@@ -91,6 +90,11 @@ export class CandleStickDrawer extends Drawer {
       this.drawAxes();
       this.drawCandles()
       this.drawMA()
+    }
+  }
+  public getYAxisDetail(y: number): YAxisDetail {
+    return {
+      left: this.yScale.invert(y).toFixed(2)
     }
   }
   get MAIndicators() {

@@ -1,5 +1,5 @@
 import uniq from 'lodash.uniq'
-import { Drawer, Chart, autoResetStyle } from "./chart";
+import { Drawer, Chart, autoResetStyle, YAxisDetail } from "./chart";
 import { ScaleLinear } from "../../node_modules/@types/d3-scale/index";
 import { scaleLinear } from 'd3-scale';
 import { max, min } from 'd3-array';
@@ -7,7 +7,7 @@ import { Rect, Point } from "../graphic/primitive";
 import { ChartTitle } from "./chart-title";
 import { drawYAxis, drawXAxis } from "../paint-utils/index";
 import { divide } from "../algorithm/divide";
-import { TITLE_HEIGHT } from '../constants/constants';
+import { TITLE_HEIGHT, TITLE_MARGIN_BOTTOM } from '../constants/constants';
 
 const VOLUME_THEME = {
   rise: '#F55559',
@@ -23,6 +23,13 @@ export interface VolumeData {
   volume: number
 }
 
+const shortenVolume = (v: number) => {
+  const scaleV = v / VolumeDrawer.proportion
+  if (scaleV > 10000) {
+    return (scaleV / 10000).toFixed(2)
+  }
+  return scaleV.toFixed(2)
+}
 const volumeLabel = (v: number) => {
   const scaleV = v / VolumeDrawer.proportion
   if (scaleV > 10000) {
@@ -36,13 +43,7 @@ const volumeLabel = (v: number) => {
 export class VolumeDrawer extends Drawer {
   static proportion = 100
   static unit = '手'
-  context: CanvasRenderingContext2D
-  yScale: ScaleLinear<number, number>
-  frame: Rect = { x: 0, y: 0, width: 0, height: 0}
-  chartFrame: Rect = { x: 0, y: 0, width: 0, height: 0}
   titleDrawer: ChartTitle
-  minValue = 0
-  maxValue = 0
   data: VolumeData[]
   constructor(chart: Chart, data: VolumeData[]) {
     super(chart, data)
@@ -79,6 +80,11 @@ export class VolumeDrawer extends Drawer {
     this.maxValue = max(data, d => d.volume)
     this.resetYScale()
   }
+  public getYAxisDetail(y: number): YAxisDetail {
+    return {
+      left: shortenVolume(this.yScale.invert(y))
+    }
+  }
   private drawTitle(i: number) {
     this.titleDrawer.setLabel(0, volumeLabel(this.data[i].volume))
     const { context: ctx, frame } = this
@@ -95,7 +101,7 @@ export class VolumeDrawer extends Drawer {
       this.chartFrame,
       this.chart.xScale,
       this.chart.options.resolution,
-      true,
+      false,
       VOLUME_THEME.gridLine,
     )
   }
@@ -117,20 +123,20 @@ export class VolumeDrawer extends Drawer {
       true,
       VOLUME_THEME.gridLine,
       (v, i) => {
-        const scaledV = v / VolumeDrawer.proportion
+        // const scaledV = v / VolumeDrawer.proportion
         if (i === 0) {
           if (useWUnit) {
             return `万${VolumeDrawer.unit}`
           }
           return VolumeDrawer.unit
         }
-        return useWUnit ? `${(scaledV / 10000 ).toFixed(2)}` : scaledV.toFixed(0)
+        return shortenVolume(v)
       }
     )
   }
   @autoResetStyle()
   protected drawVolumes() {
-    const { frame } = this
+    const { chartFrame } = this
     const { xScale } = this.chart
     const { context: ctx, yScale } = this
 
@@ -138,17 +144,20 @@ export class VolumeDrawer extends Drawer {
       ctx.fillStyle = this.calcDeltaPrice(d, i, this.data) > 0 ? VOLUME_THEME.rise : VOLUME_THEME.fall;
       const x = xScale(i),
             y = yScale(d.volume),
-            height = frame.height - (y - frame.y)
+            height = chartFrame.height - (y - chartFrame.y)
       let width = xScale(1) - xScale(0)
       width -= width * 0.2
       ctx.fillRect(x - width / 2, y, width, height)
     });
   }
   protected resetYScale() {
-    const { frame } = this;
+    const { chartFrame } = this;
     this.yScale = scaleLinear()
       .domain([0, this.maxValue])
-      .range([frame.y + frame.height, frame.y + (TITLE_HEIGHT + 15) * this.chart.options.resolution])
+      .range([
+        chartFrame.y + chartFrame.height,
+        chartFrame.y + TITLE_MARGIN_BOTTOM * this.chart.options.resolution
+      ])
   }
   calcDeltaPrice(currentValue: VolumeData, currentIndex: number, data: VolumeData[]): number {
     if (currentIndex === 0) {
